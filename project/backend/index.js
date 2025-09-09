@@ -15,7 +15,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // Configure nodemailer with Gmail SMTP
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.gmail.com",
     port: parseInt(process.env.SMTP_PORT) || 465,
     secure: true,
