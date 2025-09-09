@@ -33,7 +33,7 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
   const [facilityStampImage, setFacilityStampImage] = useState<string>("");
   const [showFacilityDropdown, setShowFacilityDropdown] = useState(false);
   const [facilitySearchTerm, setFacilitySearchTerm] = useState("");
-  
+
   // Manual job card upload states
   const [isManualUpload, setIsManualUpload] = useState(false);
   const [manualJobCard, setManualJobCard] = useState<File | null>(null);
@@ -120,25 +120,26 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
   };
 
   // Manual job card upload handlers
-  const handleManualJobCardUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleManualJobCardUpload = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       // Validate file type
-      if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
-        alert('Please upload a PDF or image file');
+      if (file.type !== "application/pdf" && !file.type.startsWith("image/")) {
+        alert("Please upload a PDF or image file");
         return;
       }
-      
+
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be less than 10MB');
+        alert("File size must be less than 10MB");
         return;
       }
-      
+
       setManualJobCard(file);
     }
   };
-
 
   const removeImage = (index: number, type: "before" | "after") => {
     if (type === "before") {
@@ -165,7 +166,7 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
         alert("Please provide a reason for manual upload");
         return;
       }
-      
+
       setIsSubmitting(true);
       try {
         // Create a manual job card entry
@@ -190,26 +191,29 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
         };
 
         const jobCardId = await addJobCard(manualJobCardData);
-        
+
         // Send email with manual job card
         const jobCardForEmail = {
           ...manualJobCardData,
           id: jobCardId,
           createdAt: new Date().toISOString(),
         };
-        
+
         // For manual uploads, we'll send the uploaded file as PDF
         const pdfBlob = new Blob([manualJobCard], { type: manualJobCard.type });
         const emailSent = await sendJobCardEmail(jobCardForEmail, pdfBlob);
-        
-        alert(`Manual Job Card ${jobCardId} uploaded successfully! ${emailSent ? 'Email sent to admin.' : 'Email failed.'}`);
-        
+
+        alert(
+          `Manual Job Card ${jobCardId} uploaded successfully! ${
+            emailSent ? "Email sent to admin." : "Email failed."
+          }`
+        );
+
         // Reset form
         setIsManualUpload(false);
         setManualJobCard(null);
         setManualReason("");
         onBack();
-        
       } catch (error) {
         console.error("Error uploading manual job card:", error);
         alert("Error uploading manual job card. Please try again.");
@@ -386,7 +390,7 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
                   Manual Job Card Upload
                 </h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -404,7 +408,8 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
                   {manualJobCard && (
                     <div className="mt-2 p-2 bg-green-100 border border-green-300 rounded">
                       <p className="text-sm text-green-700">
-                        ✓ File selected: {manualJobCard.name} ({(manualJobCard.size / 1024 / 1024).toFixed(2)} MB)
+                        ✓ File selected: {manualJobCard.name} (
+                        {(manualJobCard.size / 1024 / 1024).toFixed(2)} MB)
                       </p>
                     </div>
                   )}
@@ -431,337 +436,339 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
           {!isManualUpload && (
             <>
               {/* Hospital/Facility Information */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Building className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Facility Information
-              </h2>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Hospital/Facility Name *
-                </label>
-                <input
-                  type="text"
-                  name="hospitalName"
-                  value={formData.hospitalName}
-                  onChange={(e) => {
-                    setFormData({ ...formData, hospitalName: e.target.value });
-                    setFacilitySearchTerm(e.target.value);
-                    setShowFacilityDropdown(true);
-                  }}
-                  onFocus={() => setShowFacilityDropdown(true)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  placeholder="Type to search or enter new facility"
-                  required
-                />
-                {showFacilityDropdown && existingFacilities.length > 0 && (
-                  <div className="facility-dropdown absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                    {existingFacilities.map((facility, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => handleFacilitySelect(facility)}
-                        className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                      >
-                        {facility}
-                      </button>
-                    ))}
+              <section>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Building className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Facility Information
+                  </h2>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Hospital/Facility Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="hospitalName"
+                      value={formData.hospitalName}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          hospitalName: e.target.value,
+                        });
+                        setFacilitySearchTerm(e.target.value);
+                        setShowFacilityDropdown(true);
+                      }}
+                      onFocus={() => setShowFacilityDropdown(true)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      placeholder="Type to search or enter new facility"
+                      required
+                    />
+                    {showFacilityDropdown && existingFacilities.length > 0 && (
+                      <div className="facility-dropdown absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        {existingFacilities.map((facility, index) => (
+                          <button
+                            key={index}
+                            type="button"
+                            onClick={() => handleFacilitySelect(facility)}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                          >
+                            {facility}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date & Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  name="dateTime"
-                  value={formData.dateTime}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  required
-                />
-              </div>
-            </div>
-          </section>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Date & Time *
+                    </label>
+                    <input
+                      type="datetime-local"
+                      name="dateTime"
+                      value={formData.dateTime}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+              </section>
 
-          {/* Machine Details */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Wrench className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Machine Details
-              </h2>
-            </div>
-            <div className="grid md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Machine Type *
-                </label>
-                <input
-                  type="text"
-                  name="machineType"
-                  value={formData.machineType}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  placeholder="e.g., X-Ray Machine, CT Scanner, etc."
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Machine Model *
-                </label>
-                <input
-                  type="text"
-                  name="machineModel"
-                  value={formData.machineModel}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Serial Number *
-                </label>
-                <input
-                  type="text"
-                  name="serialNumber"
-                  value={formData.serialNumber}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  required
-                />
-              </div>
-            </div>
-          </section>
+              {/* Machine Details */}
+              <section>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Wrench className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Machine Details
+                  </h2>
+                </div>
+                <div className="grid md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Machine Type *
+                    </label>
+                    <input
+                      type="text"
+                      name="machineType"
+                      value={formData.machineType}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      placeholder="e.g., X-Ray Machine, CT Scanner, etc."
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Machine Model *
+                    </label>
+                    <input
+                      type="text"
+                      name="machineModel"
+                      value={formData.machineModel}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Serial Number *
+                    </label>
+                    <input
+                      type="text"
+                      name="serialNumber"
+                      value={formData.serialNumber}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+              </section>
 
-          {/* Service Details */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Wrench className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Service Details
-              </h2>
-            </div>
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Problem Reported *
-                </label>
-                <textarea
-                  name="problemReported"
-                  value={formData.problemReported}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
-                  placeholder="Describe the problem reported by the facility..."
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Service Performed *
-                </label>
-                <textarea
-                  name="servicePerformed"
-                  value={formData.servicePerformed}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
-                  placeholder="Detail the service performed, parts replaced, diagnosis, etc..."
-                  required
-                />
-              </div>
-            </div>
-          </section>
+              {/* Service Details */}
+              <section>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Wrench className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Service Details
+                  </h2>
+                </div>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Problem Reported *
+                    </label>
+                    <textarea
+                      name="problemReported"
+                      value={formData.problemReported}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                      placeholder="Describe the problem reported by the facility..."
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Service Performed *
+                    </label>
+                    <textarea
+                      name="servicePerformed"
+                      value={formData.servicePerformed}
+                      onChange={handleInputChange}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                      placeholder="Detail the service performed, parts replaced, diagnosis, etc..."
+                      required
+                    />
+                  </div>
+                </div>
+              </section>
 
-          {/* Before Service Photos */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Camera className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Before Service Photos
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => handleImageUpload(e, "before")}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              />
-              {beforeServiceImages.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {beforeServiceImages.map((image, index) => (
-                    <div key={index} className="relative">
+              {/* Before Service Photos */}
+              <section>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Camera className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Before Service Photos
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleImageUpload(e, "before")}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                  {beforeServiceImages.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {beforeServiceImages.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`Before ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index, "before")}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* After Service Photos */}
+              <section>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Camera className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    After Service Photos
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleImageUpload(e, "after")}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                  {afterServiceImages.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {afterServiceImages.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`After ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index, "after")}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
+
+              {/* Facility Stamp */}
+              <section>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Upload className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Facility Stamp
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleStampUpload}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                  {facilityStampImage && (
+                    <div className="relative inline-block">
                       <img
-                        src={image}
-                        alt={`Before ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border"
+                        src={facilityStampImage}
+                        alt="Facility Stamp"
+                        className="max-w-xs h-32 object-contain border rounded-lg"
                       />
                       <button
                         type="button"
-                        onClick={() => removeImage(index, "before")}
+                        onClick={removeStampImage}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-          </section>
+              </section>
 
-          {/* After Service Photos */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Camera className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                After Service Photos
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => handleImageUpload(e, "after")}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              />
-              {afterServiceImages.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {afterServiceImages.map((image, index) => (
-                    <div key={index} className="relative">
+              {/* Engineer Information (Auto-filled) */}
+              <section>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Calendar className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Engineer Information
+                  </h2>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Engineer Name
+                    </label>
+                    <input
+                      type="text"
+                      value={user?.name || ""}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-600"
+                      disabled
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Engineer ID
+                    </label>
+                    <input
+                      type="text"
+                      value={user?.engineerId || ""}
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-600"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </section>
+
+              {/* Digital Signature */}
+              <section>
+                <div className="flex items-center space-x-2 mb-4">
+                  <Signature className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Facility Representative Signature
+                  </h2>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowFacilitySignature(true)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                    >
+                      <Signature className="w-4 h-4" />
+                      <span>Capture Signature</span>
+                    </button>
+                    {facilitySignature && (
+                      <span className="text-sm text-green-600 flex items-center">
+                        ✓ Signature captured
+                      </span>
+                    )}
+                  </div>
+                  {facilitySignature && (
+                    <div className="border border-gray-200 rounded-lg p-4">
                       <img
-                        src={image}
-                        alt={`After ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border"
+                        src={facilitySignature}
+                        alt="Signature"
+                        className="max-w-xs h-20 border border-gray-200 rounded"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index, "after")}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-          </section>
-
-          {/* Facility Stamp */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Upload className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Facility Stamp
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleStampUpload}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              />
-              {facilityStampImage && (
-                <div className="relative inline-block">
-                  <img
-                    src={facilityStampImage}
-                    alt="Facility Stamp"
-                    className="max-w-xs h-32 object-contain border rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={removeStampImage}
-                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Engineer Information (Auto-filled) */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Calendar className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Engineer Information
-              </h2>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Engineer Name
-                </label>
-                <input
-                  type="text"
-                  value={user?.name || ""}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-600"
-                  disabled
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Engineer ID
-                </label>
-                <input
-                  type="text"
-                  value={user?.engineerId || ""}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-600"
-                  disabled
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Digital Signature */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Signature className="w-5 h-5 text-blue-600" />
-              <h2 className="text-lg font-semibold text-gray-900">
-                Facility Representative Signature
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setShowFacilitySignature(true)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
-                >
-                  <Signature className="w-4 h-4" />
-                  <span>Capture Signature</span>
-                </button>
-                {facilitySignature && (
-                  <span className="text-sm text-green-600 flex items-center">
-                    ✓ Signature captured
-                  </span>
-                )}
-              </div>
-              {facilitySignature && (
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <img
-                    src={facilitySignature}
-                    alt="Signature"
-                    className="max-w-xs h-20 border border-gray-200 rounded"
-                  />
-                </div>
-              )}
-            </div>
-          </section>
-
+              </section>
             </>
           )}
 
@@ -771,28 +778,33 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
               type="submit"
               disabled={
                 isSubmitting ||
-                (!isManualUpload && (
-                  !facilitySignature ||
-                  beforeServiceImages.length === 0 ||
-                  afterServiceImages.length === 0 ||
-                  !facilityStampImage
-                ))
+                (!isManualUpload &&
+                  (!facilitySignature ||
+                    beforeServiceImages.length === 0 ||
+                    afterServiceImages.length === 0 ||
+                    !facilityStampImage))
               }
               className={`px-8 py-3 rounded-lg font-medium focus:ring-2 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 ${
-                isManualUpload 
-                  ? 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500' 
-                  : 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500'
+                isManualUpload
+                  ? "bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500"
+                  : "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500"
               }`}
             >
               {isSubmitting ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>{isManualUpload ? 'Uploading Job Card...' : 'Creating Job Card...'}</span>
+                  <span>
+                    {isManualUpload
+                      ? "Uploading Job Card..."
+                      : "Creating Job Card..."}
+                  </span>
                 </>
               ) : (
                 <>
                   <Save className="w-5 h-5" />
-                  <span>{isManualUpload ? 'Upload Job Card' : 'Create Job Card'}</span>
+                  <span>
+                    {isManualUpload ? "Upload Job Card" : "Create Job Card"}
+                  </span>
                 </>
               )}
             </button>

@@ -124,7 +124,7 @@ export function SignatureCanvas({ onSave, onClose }: SignatureCanvasProps) {
       console.log("No canvas found");
       return;
     }
-    
+
     if (!hasSignature) {
       console.log("No signature detected");
       return;
