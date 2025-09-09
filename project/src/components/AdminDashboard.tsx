@@ -24,6 +24,7 @@ import { EmailTest } from "./EmailTest";
 import { PDFTest } from "./PDFTest";
 import { GmailSMTPTest } from "./GmailSMTPTest";
 import { LogoTest } from "./LogoTest";
+import { SimpleLogoTest } from "./SimpleLogoTest";
 
 export function AdminDashboard() {
   const { getAllJobCards } = useJobCard();
@@ -396,6 +397,11 @@ export function AdminDashboard() {
       {/* Email Test */}
       <div className="mb-8">
         <EmailTest />
+      </div>
+
+      {/* Simple Logo Test */}
+      <div className="mb-8">
+        <SimpleLogoTest />
       </div>
 
       {/* Logo Display Test */}

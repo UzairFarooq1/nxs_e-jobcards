@@ -2,10 +2,10 @@ import React from "react";
 
 export function LogoTest() {
   const logoPaths = [
-    "/logo_main.png",
-    "./logo_main.png",
-    "logo_main.png",
-    "/public/logo_main.png",
+    "/logomain.png",
+    "./logomain.png",
+    "logomain.png",
+    "/public/logomain.png",
   ];
 
   return (

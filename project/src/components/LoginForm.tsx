@@ -1,22 +1,23 @@
-import React, { useState } from 'react';
-import { Shield, User, Lock } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from "react";
+import { Shield, User, Lock } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
+import { LogoDisplay } from "./LogoDisplay";
 
 export function LoginForm() {
   const { login, isLoading } = useAuth();
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     const success = await login(formData.email, formData.password);
     if (!success) {
-      setError('Invalid email or password');
+      setError("Invalid email or password");
     }
   };
 
@@ -25,7 +26,7 @@ export function LoginForm() {
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img src="/logo_main.png" alt="NXS Logo" className="h-12" />
+            <LogoDisplay className="h-12" alt="NXS Logo" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
             Nairobi X-ray Supplies Ltd
@@ -43,7 +44,9 @@ export function LoginForm() {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 placeholder="Enter your email"
                 required
@@ -60,7 +63,9 @@ export function LoginForm() {
               <input
                 type="password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                 placeholder="Enter your password"
                 required
@@ -79,10 +84,9 @@ export function LoginForm() {
             disabled={isLoading}
             className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50"
           >
-            {isLoading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-
       </div>
     </div>
   );

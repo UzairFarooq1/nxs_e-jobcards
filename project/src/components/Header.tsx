@@ -1,26 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { Shield, LogOut, FileText, BarChart3, Plus, Cloud, Clock } from 'lucide-react';
-import { User } from '../contexts/AuthContext';
-import { useJobCard } from '../contexts/JobCardContext';
-import { getInactivityManager } from '../utils/inactivityManager';
+import React, { useState, useEffect } from "react";
+import {
+  Shield,
+  LogOut,
+  FileText,
+  BarChart3,
+  Plus,
+  Cloud,
+  Clock,
+} from "lucide-react";
+import { User } from "../contexts/AuthContext";
+import { useJobCard } from "../contexts/JobCardContext";
+import { getInactivityManager } from "../utils/inactivityManager";
+import { LogoDisplay } from "./LogoDisplay";
 
 interface HeaderProps {
   user: User;
   currentView: string;
-  onViewChange: (view: 'dashboard' | 'form' | 'admin') => void;
+  onViewChange: (view: "dashboard" | "form" | "admin") => void;
   onLogout: () => void;
 }
 
-export function Header({ user, currentView, onViewChange, onLogout }: HeaderProps) {
+export function Header({
+  user,
+  currentView,
+  onViewChange,
+  onLogout,
+}: HeaderProps) {
   const { isDriveInitialized } = useJobCard();
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   useEffect(() => {
     const inactivityManager = getInactivityManager();
-    
+
     const checkTimeLeft = () => {
       const remaining = inactivityManager.getRemainingTime();
-      if (remaining > 0 && remaining < 5 * 60 * 1000) { // Less than 5 minutes
+      if (remaining > 0 && remaining < 5 * 60 * 1000) {
+        // Less than 5 minutes
         setTimeLeft(Math.ceil(remaining / 1000));
       } else {
         setTimeLeft(null);
@@ -39,34 +54,38 @@ export function Header({ user, currentView, onViewChange, onLogout }: HeaderProp
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <img src="/logo_main.png" alt="NXS Logo" className="h-8" />
+              <LogoDisplay className="h-8" alt="NXS Logo" />
               <div>
-                <h1 className="text-lg font-bold text-gray-900">NXS E-JobCard</h1>
-                <p className="text-xs text-gray-500">Nairobi X-ray Supplies Ltd</p>
+                <h1 className="text-lg font-bold text-gray-900">
+                  NXS E-JobCard
+                </h1>
+                <p className="text-xs text-gray-500">
+                  Nairobi X-ray Supplies Ltd
+                </p>
               </div>
             </div>
           </div>
 
           <nav className="hidden md:flex items-center space-x-4">
-            {user.role === 'engineer' && (
+            {user.role === "engineer" && (
               <>
                 <button
-                  onClick={() => onViewChange('dashboard')}
+                  onClick={() => onViewChange("dashboard")}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === 'dashboard'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    currentView === "dashboard"
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   }`}
                 >
                   <BarChart3 className="w-4 h-4" />
                   <span>Dashboard</span>
                 </button>
                 <button
-                  onClick={() => onViewChange('form')}
+                  onClick={() => onViewChange("form")}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    currentView === 'form'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    currentView === "form"
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   }`}
                 >
                   <Plus className="w-4 h-4" />
@@ -80,14 +99,19 @@ export function Header({ user, currentView, onViewChange, onLogout }: HeaderProp
             {/* Storage Status */}
             <div className="flex items-center space-x-2 text-xs text-gray-500">
               <Cloud className="w-4 h-4" />
-              <span>{isDriveInitialized ? 'Google Drive' : 'Local Storage'}</span>
+              <span>
+                {isDriveInitialized ? "Google Drive" : "Local Storage"}
+              </span>
             </div>
 
             {/* Session Timer */}
             {timeLeft && (
               <div className="flex items-center space-x-2 text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
                 <Clock className="w-4 h-4" />
-                <span>{Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}</span>
+                <span>
+                  {Math.floor(timeLeft / 60)}:
+                  {(timeLeft % 60).toString().padStart(2, "0")}
+                </span>
               </div>
             )}
 
