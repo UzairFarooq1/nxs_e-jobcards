@@ -1,0 +1,24 @@
+{
+  "project_name": "NXS E-JobCard System",
+  "version": "1.0.0",
+  "description": "Electronic Job Card System for Nairobi X-ray Supplies Ltd",
+  "database": {
+    "type": "supabase",
+    "url": "https://uqpankjtcuqoknaimdcb.supabase.co",
+    "tables": {
+      "engineers": "User management for engineers",
+      "job_cards": "Job card records and service documentation"
+    }
+  },
+  "features": {
+    "authentication": "Supabase Auth",
+    "storage": "Supabase Database + Google Drive (optional)",
+    "session_management": "10-minute inactivity timeout",
+    "image_capture": "Before/after service photos and facility stamps",
+    "pdf_generation": "Printable job card reports"
+  },
+  "admin_credentials": {
+    "email": "it@vanguard-group.org",
+    "password": "Vgc@admin2025!"
+  }
+}
