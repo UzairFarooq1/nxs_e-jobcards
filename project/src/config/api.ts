@@ -6,9 +6,9 @@ export const API_CONFIG = {
     timeout: 10000,
   },
   
-  // Production (Vercel)
+  // Production (Vercel Backend)
   production: {
-    baseUrl: import.meta.env.VITE_API_URL || 'https://nxs-e-jobcards-backend.vercel.app/api',
+    baseUrl: import.meta.env.VITE_API_URL || 'https://your-backend-project.vercel.app/api',
     timeout: 15000,
   },
   
