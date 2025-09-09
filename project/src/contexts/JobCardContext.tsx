@@ -31,6 +31,8 @@ interface JobCardContextType {
   getJobCardsByEngineerId: (engineerId: string) => JobCard[];
   getAllJobCards: () => JobCard[];
   isDriveInitialized: boolean;
+  isLoading: boolean;
+  refreshJobCards: () => Promise<void>;
 }
 
 const JobCardContext = createContext<JobCardContextType | undefined>(undefined);
@@ -46,6 +48,7 @@ export function useJobCard() {
 export function JobCardProvider({ children }: { children: React.ReactNode }) {
   const [jobCards, setJobCards] = useState<JobCard[]>([]);
   const [isDriveInitialized, setIsDriveInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Load job cards from Supabase
@@ -53,7 +56,9 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const loadJobCards = async () => {
+    setIsLoading(true);
     try {
+      console.log("🔄 Loading job cards from Supabase...");
       const { data, error } = await supabase
         .from("job_cards")
         .select("*")
@@ -92,7 +97,7 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
           facilityStampImage: item.facility_stamp_image || "",
         }));
 
-        console.log("Loaded job cards from database:", mappedData.length);
+        console.log("✅ Loaded job cards from database:", mappedData.length);
         setJobCards(mappedData);
       }
     } catch (error) {
@@ -102,7 +107,13 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
       if (storedJobCards) {
         setJobCards(JSON.parse(storedJobCards));
       }
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const refreshJobCards = async () => {
+    await loadJobCards();
   };
 
   const addJobCard = async (
@@ -211,6 +222,8 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
         getJobCardsByEngineerId,
         getAllJobCards,
         isDriveInitialized,
+        isLoading,
+        refreshJobCards,
       }}
     >
       {children}
