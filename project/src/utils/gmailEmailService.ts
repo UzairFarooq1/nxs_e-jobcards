@@ -1,5 +1,6 @@
 import { JobCard } from "../contexts/JobCardContext";
 import { API_CONFIG } from "../config/api";
+import { generateJobCardEmailHTML } from "./emailTemplate";
 
 // Get API base URL based on current environment
 const API_BASE_URL = API_CONFIG.getBaseUrl();
@@ -12,9 +13,13 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
     console.log(`📧 Sending job card email via Gmail SMTP for: ${jobCard.id}`);
     console.log(`📄 PDF size: ${pdfBlob.size} bytes`);
 
+    // Generate beautiful HTML email template
+    const htmlContent = generateJobCardEmailHTML(jobCard);
+    
     // Create FormData for file upload
     const formData = new FormData();
     formData.append('jobCardData', JSON.stringify(jobCard));
+    formData.append('htmlContent', htmlContent);
     formData.append('pdf', pdfBlob, `jobcard-${jobCard.id}.pdf`);
 
     // Send request to backend
@@ -66,7 +71,7 @@ export const testGmailConnection = async (): Promise<boolean> => {
  * Generate PDF content for email attachment
  */
 export const generateJobCardPDF = async (jobCard: JobCard): Promise<Blob> => {
-  // Use the simple PDF generator for better reliability
-  const { generateSimpleJobCardPDFBlob } = await import('./simplePdfBlobGenerator');
-  return await generateSimpleJobCardPDFBlob(jobCard);
+  // Use the reliable PDF generator
+  const { generateReliableJobCardPDF } = await import('./reliablePdfGenerator');
+  return await generateReliableJobCardPDF(jobCard);
 };

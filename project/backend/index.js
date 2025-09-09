@@ -56,7 +56,7 @@ app.get("/api/health", (req, res) => {
 // Send job card email endpoint
 app.post("/api/send-jobcard-email", upload.single("pdf"), async (req, res) => {
   try {
-    const { jobCardData, pdf } = req.body;
+    const { jobCardData, htmlContent, pdf } = req.body;
 
     if (!jobCardData || !req.file) {
       return res
@@ -67,34 +67,36 @@ app.post("/api/send-jobcard-email", upload.single("pdf"), async (req, res) => {
     const jobCard = JSON.parse(jobCardData);
     const transporter = createTransporter();
 
+    // Use the beautiful HTML template from frontend, or fallback to simple template
+    const emailHTML =
+      htmlContent ||
+      `
+      <h2>New Job Card Created</h2>
+      <p><strong>Job Card ID:</strong> ${jobCard.id}</p>
+      <p><strong>Hospital:</strong> ${jobCard.hospitalName}</p>
+      <p><strong>Engineer:</strong> ${jobCard.engineerName} (${
+        jobCard.engineerId
+      })</p>
+      <p><strong>Machine:</strong> ${jobCard.machineType} - ${
+        jobCard.machineModel
+      }</p>
+      <p><strong>Serial Number:</strong> ${jobCard.serialNumber}</p>
+      <p><strong>Date:</strong> ${new Date(
+        jobCard.dateTime
+      ).toLocaleString()}</p>
+      <h3>Problem Reported:</h3>
+      <p>${jobCard.problemReported}</p>
+      <h3>Service Performed:</h3>
+      <p>${jobCard.servicePerformed}</p>
+      <p><em>Job card PDF is attached to this email.</em></p>
+    `;
+
     // Email content
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: process.env.ADMIN_EMAIL || "it@vanguard-group.org",
-      subject: `New Job Card: ${jobCard.id} - ${jobCard.hospitalName}`,
-      html: `
-        <h2>New Job Card Created</h2>
-        <p><strong>Job Card ID:</strong> ${jobCard.id}</p>
-        <p><strong>Hospital:</strong> ${jobCard.hospitalName}</p>
-        <p><strong>Engineer:</strong> ${jobCard.engineerName} (${
-        jobCard.engineerId
-      })</p>
-        <p><strong>Machine:</strong> ${jobCard.machineType} - ${
-        jobCard.machineModel
-      }</p>
-        <p><strong>Serial Number:</strong> ${jobCard.serialNumber}</p>
-        <p><strong>Date:</strong> ${new Date(
-          jobCard.dateTime
-        ).toLocaleString()}</p>
-        
-        <h3>Problem Reported:</h3>
-        <p>${jobCard.problemReported}</p>
-        
-        <h3>Service Performed:</h3>
-        <p>${jobCard.servicePerformed}</p>
-        
-        <p><em>Job card PDF is attached to this email.</em></p>
-      `,
+      subject: `🔧 New Job Card: ${jobCard.id} - ${jobCard.hospitalName}`,
+      html: emailHTML,
       attachments: [
         {
           filename: `jobcard-${jobCard.id}.pdf`,

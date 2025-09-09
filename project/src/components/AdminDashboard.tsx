@@ -23,6 +23,7 @@ import { DatabaseTest } from "./DatabaseTest";
 import { EmailTest } from "./EmailTest";
 import { PDFTest } from "./PDFTest";
 import { PDFTestSimple } from "./PDFTestSimple";
+import { ReliablePDFTest } from "./ReliablePDFTest";
 import { GmailSMTPTest } from "./GmailSMTPTest";
 import { LogoTest } from "./LogoTest";
 import { SimpleLogoTest } from "./SimpleLogoTest";
@@ -413,6 +414,11 @@ export function AdminDashboard() {
       {/* Gmail SMTP Test */}
       <div className="mb-8">
         <GmailSMTPTest />
+      </div>
+
+      {/* Reliable PDF Generation Test */}
+      <div className="mb-8">
+        <ReliablePDFTest />
       </div>
 
       {/* Simple PDF Generation Test */}
