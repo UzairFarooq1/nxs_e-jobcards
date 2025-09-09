@@ -15,24 +15,28 @@ export function SimpleLogoTest() {
         <div className="flex items-center space-x-4 p-3 bg-white rounded border">
           <div className="w-16 h-16 border border-gray-300 rounded flex items-center justify-center">
             <img
-              src="/logomain.png"
+              src="/static/images/logomain.png"
               alt="Logo test 1"
               className="max-w-full max-h-full object-contain"
               onError={(e) => {
-                console.error("❌ Logo failed to load: /logomain.png");
+                console.error(
+                  "❌ Logo failed to load: /static/images/logomain.png"
+                );
                 e.currentTarget.style.display = "none";
               }}
               onLoad={() => {
-                console.log("✅ Logo loaded successfully: /logomain.png");
+                console.log(
+                  "✅ Logo loaded successfully: /static/images/logomain.png"
+                );
               }}
             />
           </div>
           <div>
             <p className="text-sm font-medium">
-              Path: <code>/logomain.png</code>
+              Path: <code>/static/images/logomain.png</code>
             </p>
             <p className="text-xs text-gray-500">
-              Root path (after copy command)
+              New location (public/static/images/)
             </p>
           </div>
         </div>
@@ -42,12 +46,12 @@ export function SimpleLogoTest() {
           <p className="text-sm text-yellow-800">
             <strong>Direct URL Test:</strong> Try accessing{" "}
             <a
-              href="/logomain.png"
+              href="/static/images/logomain.png"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline"
             >
-              /logomain.png
+              /static/images/logomain.png
             </a>{" "}
             directly in your browser
           </p>

@@ -10,10 +10,11 @@ export function LogoDisplay({
   alt = "NXS Logo",
 }: LogoDisplayProps) {
   const [logoError, setLogoError] = useState(false);
-  const [currentPath, setCurrentPath] = useState("/logomain.png");
+  const [currentPath, setCurrentPath] = useState("/static/images/logomain.png");
 
   const logoPaths = [
-    "/logomain.png", // Root directory (your copy command)
+    "/static/images/logomain.png", // New location (public/static/images/)
+    "/logomain.png", // Root directory (previous copy)
     "./logomain.png", // Relative path
     "logomain.png", // Direct filename
     "/public/logomain.png", // Public folder (original)
