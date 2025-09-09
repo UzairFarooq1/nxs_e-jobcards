@@ -57,13 +57,14 @@ export function SimpleLogoTest() {
           </p>
         </div>
 
-        {/* Test 3: Alternative paths */}
+        {/* Test 3: Single path confirmation */}
         <div className="p-3 bg-gray-50 border border-gray-200 rounded">
           <p className="text-sm text-gray-800">
-            <strong>Alternative paths to try:</strong>
-            <br />• <code>./logomain.png</code>
-            <br />• <code>logomain.png</code>
-            <br />• <code>/public/logomain.png</code>
+            <strong>Using only:</strong>{" "}
+            <code>/static/images/logomain.png</code>
+            <br />
+            <strong>Location:</strong>{" "}
+            <code>public/static/images/logomain.png</code>
           </p>
         </div>
       </div>

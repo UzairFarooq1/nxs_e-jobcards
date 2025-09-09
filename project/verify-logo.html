@@ -55,22 +55,12 @@
         <p>Try these URLs directly in your browser:</p>
         <ul>
             <li><a href="/static/images/logomain.png" target="_blank">/static/images/logomain.png</a></li>
-            <li><a href="/logomain.png" target="_blank">/logomain.png</a></li>
-            <li><a href="./logomain.png" target="_blank">./logomain.png</a></li>
-            <li><a href="logomain.png" target="_blank">logomain.png</a></li>
-            <li><a href="/public/logomain.png" target="_blank">/public/logomain.png</a></li>
         </ul>
     </div>
 
     <script>
         const logoPaths = [
-            "/static/images/logomain.png",  // New location
-            "/logomain.png",
-            "./logomain.png", 
-            "logomain.png",
-            "/public/logomain.png",
-            "/assets/logomain.png",
-            "/static/logomain.png"
+            "/static/images/logomain.png"  // Only path we need
         ];
 
         const container = document.getElementById('logo-tests');

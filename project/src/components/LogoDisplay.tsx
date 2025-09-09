@@ -13,29 +13,12 @@ export function LogoDisplay({
   const [currentPath, setCurrentPath] = useState("/static/images/logomain.png");
 
   const logoPaths = [
-    "/static/images/logomain.png", // New location (public/static/images/)
-    "/logomain.png", // Root directory (previous copy)
-    "./logomain.png", // Relative path
-    "logomain.png", // Direct filename
-    "/public/logomain.png", // Public folder (original)
-    "/assets/logomain.png", // Vercel assets folder
-    "/static/logomain.png", // Static folder
+    "/static/images/logomain.png", // Only path we need
   ];
 
   const handleError = () => {
     console.error(`Logo failed to load: ${currentPath}`);
     setLogoError(true);
-
-    // Try next path
-    const currentIndex = logoPaths.indexOf(currentPath);
-    if (currentIndex < logoPaths.length - 1) {
-      const nextPath = logoPaths[currentIndex + 1];
-      console.log(`Trying next path: ${nextPath}`);
-      setCurrentPath(nextPath);
-      setLogoError(false);
-    } else {
-      console.error("All logo paths failed");
-    }
   };
 
   const handleLoad = () => {
@@ -43,8 +26,8 @@ export function LogoDisplay({
     setLogoError(false);
   };
 
-  if (logoError && logoPaths.indexOf(currentPath) === logoPaths.length - 1) {
-    // All paths failed, show fallback
+  if (logoError) {
+    // Logo failed to load, show fallback
     return (
       <div
         className={`${className} bg-gray-200 rounded flex items-center justify-center`}
