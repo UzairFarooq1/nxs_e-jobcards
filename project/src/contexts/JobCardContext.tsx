@@ -59,17 +59,32 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true);
     try {
       console.log("🔄 Loading job cards from Supabase...");
-      const { data, error } = await supabase
+
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("Database query timeout")), 10000)
+      );
+
+      const queryPromise = supabase
         .from("job_cards")
         .select("*")
         .order("created_at", { ascending: false });
+
+      const { data, error } = (await Promise.race([
+        queryPromise,
+        timeoutPromise,
+      ])) as any;
 
       if (error) {
         console.error("Error loading job cards:", error);
         // Fallback to localStorage
         const storedJobCards = localStorage.getItem("nxs-jobcards");
         if (storedJobCards) {
+          console.log("Using cached job cards from localStorage");
           setJobCards(JSON.parse(storedJobCards));
+        } else {
+          console.log("No cached data available");
+          setJobCards([]);
         }
         return;
       }
@@ -99,6 +114,9 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
 
         console.log("✅ Loaded job cards from database:", mappedData.length);
         setJobCards(mappedData);
+
+        // Cache the data in localStorage for faster loading next time
+        localStorage.setItem("nxs-jobcards", JSON.stringify(mappedData));
       }
     } catch (error) {
       console.error("Error loading job cards:", error);

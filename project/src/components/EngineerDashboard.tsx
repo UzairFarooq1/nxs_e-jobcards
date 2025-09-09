@@ -1,8 +1,16 @@
-import React, { useState } from 'react';
-import { FileText, Download, Search, Calendar, Building, Wrench } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import { useJobCard } from '../contexts/JobCardContext';
-import { generateJobCardPDF } from '../utils/pdfGenerator';
+import React, { useState } from "react";
+import {
+  FileText,
+  Download,
+  Search,
+  Calendar,
+  Building,
+  Wrench,
+} from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
+import { useJobCard } from "../contexts/JobCardContext";
+import { generateJobCardPDF } from "../utils/pdfGenerator";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 interface EngineerDashboardProps {
   onCreateJobCard: () => void;
@@ -10,15 +18,27 @@ interface EngineerDashboardProps {
 
 export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
   const { user } = useAuth();
-  const { getJobCardsByEngineerId } = useJobCard();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { getJobCardsByEngineerId, isLoading } = useJobCard();
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const jobCards = user?.engineerId ? getJobCardsByEngineerId(user.engineerId) : [];
-  
-  const filteredJobCards = jobCards.filter(card => 
-    card.hospitalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    card.machineType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    card.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const jobCards = user?.engineerId
+    ? getJobCardsByEngineerId(user.engineerId)
+    : [];
+
+  // Show loading spinner while data is loading
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <LoadingSpinner message="Loading job cards..." size="lg" />
+      </div>
+    );
+  }
+
+  const filteredJobCards = jobCards.filter(
+    (card) =>
+      card.hospitalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.machineType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      card.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleDownload = (jobCard: any) => {
@@ -30,7 +50,9 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Engineer Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Engineer Dashboard
+            </h1>
             <p className="text-gray-600">Welcome back, {user?.name}</p>
           </div>
           <button
@@ -51,7 +73,9 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
               <FileText className="w-6 h-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{jobCards.length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {jobCards.length}
+              </p>
               <p className="text-sm text-gray-600">Total Job Cards</p>
             </div>
           </div>
@@ -64,7 +88,7 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {new Set(jobCards.map(card => card.hospitalName)).size}
+                {new Set(jobCards.map((card) => card.hospitalName)).size}
               </p>
               <p className="text-sm text-gray-600">Facilities Served</p>
             </div>
@@ -78,7 +102,13 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">
-                {jobCards.filter(card => new Date(card.createdAt).getMonth() === new Date().getMonth()).length}
+                {
+                  jobCards.filter(
+                    (card) =>
+                      new Date(card.createdAt).getMonth() ===
+                      new Date().getMonth()
+                  ).length
+                }
               </p>
               <p className="text-sm text-gray-600">This Month</p>
             </div>
@@ -105,7 +135,9 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
       {/* Job Cards List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Job Cards</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Recent Job Cards
+          </h2>
         </div>
         <div className="divide-y divide-gray-200">
           {filteredJobCards.length === 0 ? (
@@ -121,7 +153,10 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
             </div>
           ) : (
             filteredJobCards.map((card) => (
-              <div key={card.id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div
+                key={card.id}
+                className="p-6 hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
@@ -133,9 +168,12 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
                         {new Date(card.createdAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <h3 className="font-semibold text-gray-900 mb-1">{card.hospitalName}</h3>
+                    <h3 className="font-semibold text-gray-900 mb-1">
+                      {card.hospitalName}
+                    </h3>
                     <p className="text-sm text-gray-600 mb-2">
-                      {card.machineType} - {card.machineModel} (S/N: {card.serialNumber})
+                      {card.machineType} - {card.machineModel} (S/N:{" "}
+                      {card.serialNumber})
                     </p>
                     <p className="text-sm text-gray-500 line-clamp-2">
                       Problem: {card.problemReported}

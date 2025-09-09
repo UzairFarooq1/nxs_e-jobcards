@@ -66,7 +66,7 @@ export const testGmailConnection = async (): Promise<boolean> => {
  * Generate PDF content for email attachment
  */
 export const generateJobCardPDF = async (jobCard: JobCard): Promise<Blob> => {
-  // Use the html2canvas PDF generator
-  const { generateJobCardPDFBlob } = await import('./pdfBlobGenerator');
-  return await generateJobCardPDFBlob(jobCard);
+  // Use the simple PDF generator for better reliability
+  const { generateSimpleJobCardPDFBlob } = await import('./simplePdfBlobGenerator');
+  return await generateSimpleJobCardPDFBlob(jobCard);
 };

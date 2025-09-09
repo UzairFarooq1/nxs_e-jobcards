@@ -22,6 +22,7 @@ import { generateJobCardPDF } from "../utils/pdfGenerator";
 import { DatabaseTest } from "./DatabaseTest";
 import { EmailTest } from "./EmailTest";
 import { PDFTest } from "./PDFTest";
+import { PDFTestSimple } from "./PDFTestSimple";
 import { GmailSMTPTest } from "./GmailSMTPTest";
 import { LogoTest } from "./LogoTest";
 import { SimpleLogoTest } from "./SimpleLogoTest";
@@ -412,6 +413,11 @@ export function AdminDashboard() {
       {/* Gmail SMTP Test */}
       <div className="mb-8">
         <GmailSMTPTest />
+      </div>
+
+      {/* Simple PDF Generation Test */}
+      <div className="mb-8">
+        <PDFTestSimple />
       </div>
 
       {/* PDF Generation Test */}
