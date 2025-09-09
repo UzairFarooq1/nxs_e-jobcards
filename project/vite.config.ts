@@ -11,11 +11,18 @@ export default defineConfig({
     assetsDir: 'assets',
     rollupOptions: {
       output: {
-        assetFileNames: 'assets/[name].[hash][extname]',
+        assetFileNames: (assetInfo) => {
+          // Keep logo_main.png in root for easy access
+          if (assetInfo.name === 'logo_main.png') {
+            return 'logo_main.png';
+          }
+          return 'assets/[name].[hash][extname]';
+        },
         chunkFileNames: 'assets/[name].[hash].js',
         entryFileNames: 'assets/[name].[hash].js',
       },
     },
   },
   base: '/',
+  publicDir: 'public',
 });

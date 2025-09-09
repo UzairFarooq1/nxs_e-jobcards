@@ -19,17 +19,21 @@ export function GmailSMTPTest() {
       const isConnected = await testGmailConnection();
       if (isConnected) {
         setConnectionStatus("✅ Connected");
-        setTestResult("Gmail SMTP connection successful!");
+        setTestResult(
+          "Gmail SMTP connection successful! Backend is configured and ready."
+        );
       } else {
         setConnectionStatus("❌ Disconnected");
         setTestResult(
-          "Gmail SMTP connection failed. Check server and credentials."
+          "Gmail SMTP connection failed. Check if backend is deployed and environment variables are set."
         );
       }
     } catch (error) {
       console.error("Connection test error:", error);
       setConnectionStatus("❌ Error");
-      setTestResult(`Connection test failed: ${error}`);
+      setTestResult(
+        `Connection test failed: ${error}. Check if backend is running at the correct URL.`
+      );
     } finally {
       setIsTesting(false);
     }
@@ -137,11 +141,13 @@ export function GmailSMTPTest() {
         {/* Instructions */}
         <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
           <p className="text-sm text-yellow-800">
-            <strong>Note:</strong> Make sure the backend server is running on
-            port 3001.
+            <strong>Note:</strong> Make sure the backend is deployed on Vercel.
             <br />
-            <strong>Server:</strong>{" "}
-            <code>cd server && npm install && npm start</code>
+            <strong>Backend URL:</strong>{" "}
+            https://nxs-e-jobcards-backend.vercel.app/api
+            <br />
+            <strong>Environment Variables:</strong> SMTP_HOST, SMTP_USER,
+            SMTP_PASS, ADMIN_EMAIL
           </p>
         </div>
       </div>

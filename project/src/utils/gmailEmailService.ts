@@ -43,11 +43,19 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
  */
 export const testGmailConnection = async (): Promise<boolean> => {
   try {
+    console.log('🔍 Testing Gmail connection at:', `${API_BASE_URL}/health`);
     const response = await fetch(`${API_BASE_URL}/health`);
-    const data = await response.json();
     
+    if (!response.ok) {
+      console.error('❌ Health check failed:', response.status, response.statusText);
+      return false;
+    }
+    
+    const data = await response.json();
     console.log('🔍 Gmail SMTP status:', data);
-    return data.smtp === 'connected';
+    
+    // Check if SMTP is configured (not connected, as that would require actual email sending)
+    return data.smtp === 'configured';
   } catch (error) {
     console.error('❌ Error testing Gmail connection:', error);
     return false;

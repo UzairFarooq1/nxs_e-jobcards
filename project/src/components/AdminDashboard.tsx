@@ -23,6 +23,7 @@ import { DatabaseTest } from "./DatabaseTest";
 import { EmailTest } from "./EmailTest";
 import { PDFTest } from "./PDFTest";
 import { GmailSMTPTest } from "./GmailSMTPTest";
+import { LogoTest } from "./LogoTest";
 
 export function AdminDashboard() {
   const { getAllJobCards } = useJobCard();
@@ -395,6 +396,11 @@ export function AdminDashboard() {
       {/* Email Test */}
       <div className="mb-8">
         <EmailTest />
+      </div>
+
+      {/* Logo Display Test */}
+      <div className="mb-8">
+        <LogoTest />
       </div>
 
       {/* Gmail SMTP Test */}
