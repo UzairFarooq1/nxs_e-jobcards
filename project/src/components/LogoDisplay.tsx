@@ -13,10 +13,12 @@ export function LogoDisplay({
   const [currentPath, setCurrentPath] = useState("/logomain.png");
 
   const logoPaths = [
-    "/logomain.png",
-    "./logomain.png",
-    "logomain.png",
-    "/public/logomain.png",
+    "/logomain.png", // Root directory (your copy command)
+    "./logomain.png", // Relative path
+    "logomain.png", // Direct filename
+    "/public/logomain.png", // Public folder (original)
+    "/assets/logomain.png", // Vercel assets folder
+    "/static/logomain.png", // Static folder
   ];
 
   const handleError = () => {

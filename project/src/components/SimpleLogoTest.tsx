@@ -31,7 +31,9 @@ export function SimpleLogoTest() {
             <p className="text-sm font-medium">
               Path: <code>/logomain.png</code>
             </p>
-            <p className="text-xs text-gray-500">Root path (recommended)</p>
+            <p className="text-xs text-gray-500">
+              Root path (after copy command)
+            </p>
           </div>
         </div>
 

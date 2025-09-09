@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .logo-test {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Logo Verification Test</h1>
+    <p>This page tests different logo paths to see which one works on Vercel.</p>
+    
+    <div class="test-container">
+        <h2>Logo Path Tests</h2>
+        <div id="logo-tests"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Direct URL Tests</h2>
+        <p>Try these URLs directly in your browser:</p>
+        <ul>
+            <li><a href="/logomain.png" target="_blank">/logomain.png</a></li>
+            <li><a href="./logomain.png" target="_blank">./logomain.png</a></li>
+            <li><a href="logomain.png" target="_blank">logomain.png</a></li>
+            <li><a href="/public/logomain.png" target="_blank">/public/logomain.png</a></li>
+        </ul>
+    </div>
+
+    <script>
+        const logoPaths = [
+            "/logomain.png",
+            "./logomain.png", 
+            "logomain.png",
+            "/public/logomain.png",
+            "/assets/logomain.png",
+            "/static/logomain.png"
+        ];
+
+        const container = document.getElementById('logo-tests');
+
+        logoPaths.forEach((path, index) => {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'logo-test';
+            testDiv.innerHTML = `
+                <div class="logo-img">
+                    <img src="${path}" alt="Logo test ${index + 1}" style="max-width: 100%; max-height: 100%;" 
+                         onload="this.parentElement.nextElementSibling.innerHTML='<span class=\'status success\'>✅ Success</span>'; this.parentElement.nextElementSibling.nextElementSibling.innerHTML='Loaded successfully'"
+                         onerror="this.parentElement.nextElementSibling.innerHTML='<span class=\'status error\'>❌ Failed</span>'; this.parentElement.nextElementSibling.nextElementSibling.innerHTML='Failed to load'">
+                </div>
+                <div>
+                    <div><strong>Path:</strong> <code>${path}</code></div>
+                    <div class="status">Testing...</div>
+                    <div style="font-size: 12px; color: #666;">Status will update automatically</div>
+                </div>
+            `;
+            container.appendChild(testDiv);
+        });
+    </script>
+</body>
+</html>
