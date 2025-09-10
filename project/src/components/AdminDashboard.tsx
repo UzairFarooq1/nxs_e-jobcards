@@ -19,14 +19,6 @@ import {
 import { useJobCard } from "../contexts/JobCardContext";
 import { useAuth } from "../contexts/AuthContext";
 import { generateJobCardPDF } from "../utils/pdfGenerator";
-import { DatabaseTest } from "./DatabaseTest";
-import { EmailTest } from "./EmailTest";
-import { PDFTest } from "./PDFTest";
-import { PDFTestSimple } from "./PDFTestSimple";
-import { ReliablePDFTest } from "./ReliablePDFTest";
-import { GmailSMTPTest } from "./GmailSMTPTest";
-import { LogoTest } from "./LogoTest";
-import { SimpleLogoTest } from "./SimpleLogoTest";
 
 export function AdminDashboard() {
   const { getAllJobCards } = useJobCard();
@@ -389,46 +381,6 @@ export function AdminDashboard() {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Database Test */}
-      <div className="mb-8">
-        <DatabaseTest />
-      </div>
-
-      {/* Email Test */}
-      <div className="mb-8">
-        <EmailTest />
-      </div>
-
-      {/* Simple Logo Test */}
-      <div className="mb-8">
-        <SimpleLogoTest />
-      </div>
-
-      {/* Logo Display Test */}
-      <div className="mb-8">
-        <LogoTest />
-      </div>
-
-      {/* Gmail SMTP Test */}
-      <div className="mb-8">
-        <GmailSMTPTest />
-      </div>
-
-      {/* Reliable PDF Generation Test */}
-      <div className="mb-8">
-        <ReliablePDFTest />
-      </div>
-
-      {/* Simple PDF Generation Test */}
-      <div className="mb-8">
-        <PDFTestSimple />
-      </div>
-
-      {/* PDF Generation Test */}
-      <div className="mb-8">
-        <PDFTest />
       </div>
 
       {/* Stats Grid */}

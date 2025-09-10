@@ -134,33 +134,20 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
           padding-bottom: 20px;
         }
         
-        .logo-container {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 15px;
-          gap: 15px;
-        }
-        
-        .logo {
-          height: 60px;
-          width: auto;
-          object-fit: contain;
-        }
-        
         .company-info {
-          text-align: left;
+          text-align: center;
+          margin-bottom: 15px;
         }
         
         .company-name {
-          font-size: 28px;
+          font-size: 24px;
           font-weight: bold;
           color: #2563eb;
           margin-bottom: 5px;
         }
         
         .company-subtitle {
-          font-size: 14px;
+          font-size: 16px;
           color: #666;
           font-weight: 500;
         }
@@ -278,14 +265,10 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
     </head>
     <body>
       <div class="header">
-        <div class="logo-container">
-          <img src="https://drive.google.com/uc?export=view&id=17hPAwmzKS3LKBEn-Kzz-JBD-QM0vF_uq" alt="NXS Logo" class="logo" />
-          <div class="company-info">
-            <div class="company-name">NXS</div>
-            <div class="company-subtitle">Nairobi X-ray Supplies Ltd</div>
-          </div>
+        <div class="company-info">
+          <div class="company-name">Nairobi X-ray Supplies Limited</div>
+          <div class="company-subtitle">E-JobCard System</div>
         </div>
-        <div class="job-card-title">E-JobCard System</div>
         <div class="job-id">Job Card ID: ${jobCard.id}</div>
       </div>
 
@@ -373,7 +356,12 @@ async function generateTextBasedPDF(jobCard: JobCard): Promise<Blob> {
     // Title
     pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('NXS E-JobCard System', 105, 20, { align: 'center' });
+    pdf.text('Nairobi X-ray Supplies Limited', 105, 20, { align: 'center' });
+    
+    // Subtitle
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('E-JobCard System', 105, 30, { align: 'center' });
     
     // Job Card ID
     pdf.setFontSize(16);

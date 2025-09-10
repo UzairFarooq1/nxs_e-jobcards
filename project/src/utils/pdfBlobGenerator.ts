@@ -103,11 +103,22 @@ const generateHTMLContent = (jobCard: JobCard): string => {
           padding-bottom: 20px;
           margin-bottom: 30px;
         }
+        
+        .company-info {
+          margin-bottom: 15px;
+        }
+        
         .company-name {
           font-size: 24px;
           font-weight: bold;
-          color: #1f2937;
+          color: #2563eb;
           margin-bottom: 5px;
+        }
+        
+        .company-subtitle {
+          font-size: 16px;
+          color: #666;
+          font-weight: 500;
         }
         .job-card-title {
           font-size: 18px;
@@ -185,10 +196,10 @@ const generateHTMLContent = (jobCard: JobCard): string => {
     </head>
     <body>
       <div class="header">
-        <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-          <img src="/static/images/logo.jpg" alt="NXS Logo" style="height: 50px; max-width: 200px;" />
+        <div class="company-info">
+          <div class="company-name">Nairobi X-ray Supplies Limited</div>
+          <div class="company-subtitle">E-JobCard System</div>
         </div>
-        <div class="job-card-title">E-JobCard System</div>
         <div class="job-id">Job Card ID: ${jobCard.id}</div>
       </div>
 

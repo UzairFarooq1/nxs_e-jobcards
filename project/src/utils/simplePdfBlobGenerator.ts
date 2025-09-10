@@ -80,6 +80,23 @@ function generateSimpleHTMLContent(jobCard: JobCard): string {
           border-bottom: 2px solid #333;
           padding-bottom: 20px;
         }
+        
+        .company-info {
+          margin-bottom: 15px;
+        }
+        
+        .company-name {
+          font-size: 24px;
+          font-weight: bold;
+          color: #2563eb;
+          margin-bottom: 5px;
+        }
+        
+        .company-subtitle {
+          font-size: 16px;
+          color: #666;
+          font-weight: 500;
+        }
         .logo {
           height: 60px;
           margin-bottom: 10px;
@@ -137,8 +154,10 @@ function generateSimpleHTMLContent(jobCard: JobCard): string {
     </head>
     <body>
       <div class="header">
-        <img src="/static/images/logo.jpg" alt="NXS Logo" class="logo" />
-        <div class="job-card-title">E-JobCard System</div>
+        <div class="company-info">
+          <div class="company-name">Nairobi X-ray Supplies Limited</div>
+          <div class="company-subtitle">E-JobCard System</div>
+        </div>
         <div class="job-id">Job Card ID: ${jobCard.id}</div>
       </div>
 
