@@ -1,48 +1,91 @@
 import { JobCard } from '../contexts/JobCardContext';
 
 /**
- * Reliable PDF Generator using window.print() method
+ * Reliable PDF Generator using html2canvas and jsPDF
  * This creates a proper PDF that can be viewed and attached to emails
  */
 export const generateReliableJobCardPDF = async (jobCard: JobCard): Promise<Blob> => {
-  return new Promise((resolve, reject) => {
+  try {
+    // Create a temporary container for PDF generation
+    const tempContainer = document.createElement('div');
+    tempContainer.style.position = 'absolute';
+    tempContainer.style.left = '-9999px';
+    tempContainer.style.top = '-9999px';
+    tempContainer.style.width = '210mm'; // A4 width
+    tempContainer.style.height = '297mm'; // A4 height
+    tempContainer.style.background = 'white';
+    tempContainer.style.padding = '20px';
+    tempContainer.style.boxSizing = 'border-box';
+    
+    // Generate HTML content
+    const htmlContent = generatePDFHTMLContent(jobCard);
+    tempContainer.innerHTML = htmlContent;
+    
+    // Add to DOM temporarily
+    document.body.appendChild(tempContainer);
+    
     try {
-      // Create a new window for PDF generation
-      const printWindow = window.open('', '_blank', 'width=800,height=600');
-      if (!printWindow) {
-        reject(new Error('Could not open print window'));
-        return;
-      }
-
-      // Generate HTML content
-      const htmlContent = generatePDFHTMLContent(jobCard);
+      // Wait for images to load
+      await waitForImages(tempContainer);
       
-      // Write content to the new window
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-
-      // Wait for content to load
-      printWindow.onload = () => {
-        // Trigger print dialog
-        printWindow.print();
-        
-        // Close the window after a short delay
-        setTimeout(() => {
-          printWindow.close();
-        }, 1000);
-
-        // For email attachment, we need to create a blob
-        // This is a workaround - we'll create a simple text-based PDF
-        const pdfContent = generateTextBasedPDF(jobCard);
-        const blob = new Blob([pdfContent], { type: 'application/pdf' });
-        resolve(blob);
-      };
-
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      reject(error);
+      // Use html2canvas to convert to canvas
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(tempContainer, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        width: 794, // A4 width in pixels at 96 DPI
+        height: 1123, // A4 height in pixels at 96 DPI
+        backgroundColor: '#ffffff'
+      });
+      
+      // Convert canvas to blob
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          // Clean up
+          document.body.removeChild(tempContainer);
+          
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to generate PDF blob'));
+          }
+        }, 'application/pdf', 0.95); // High quality
+      });
+      
+    } catch (html2canvasError) {
+      console.warn('html2canvas failed, falling back to text-based PDF:', html2canvasError);
+      
+      // Clean up
+      document.body.removeChild(tempContainer);
+      
+      // Fallback to text-based PDF
+      const pdfContent = generateTextBasedPDF(jobCard);
+      return new Blob([pdfContent], { type: 'application/pdf' });
     }
+    
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    // Final fallback
+    const pdfContent = generateTextBasedPDF(jobCard);
+    return new Blob([pdfContent], { type: 'application/pdf' });
+  }
+};
+
+/**
+ * Wait for all images in the container to load
+ */
+const waitForImages = (container: HTMLElement): Promise<void> => {
+  const images = Array.from(container.querySelectorAll('img'));
+  const imagePromises = images.map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise<void>((resolve) => {
+      img.onload = () => resolve();
+      img.onerror = () => resolve(); // Continue even if image fails to load
+    });
   });
+  
+  return Promise.all(imagePromises).then(() => {});
 };
 
 /**
@@ -76,9 +119,22 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
           padding-bottom: 20px;
         }
         
-        .logo {
-          height: 80px;
+        .logo-container {
+          text-align: center;
           margin-bottom: 15px;
+        }
+        
+        .company-name {
+          font-size: 32px;
+          font-weight: bold;
+          color: #2563eb;
+          margin-bottom: 5px;
+        }
+        
+        .company-subtitle {
+          font-size: 14px;
+          color: #666;
+          font-weight: 500;
         }
         
         .job-card-title {
@@ -194,7 +250,10 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
     </head>
     <body>
       <div class="header">
-        <img src="/static/images/logomain.png" alt="NXS Logo" class="logo" />
+        <div class="logo-container">
+          <div class="company-name">NXS</div>
+          <div class="company-subtitle">Nairobi X-ray Supplies Ltd</div>
+        </div>
         <div class="job-card-title">E-JobCard System</div>
         <div class="job-id">Job Card ID: ${jobCard.id}</div>
       </div>
@@ -269,6 +328,42 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
  * Generate a simple text-based PDF content as fallback
  */
 function generateTextBasedPDF(jobCard: JobCard): string {
+  // Escape special characters for PDF
+  const escape = (str: string) => str.replace(/[()\\]/g, '\\$&');
+  
+  const content = `BT
+/F1 16 Tf
+50 750 Td
+(NXS E-JobCard System) Tj
+0 -30 Td
+/F1 12 Tf
+(Job Card ID: ${escape(jobCard.id)}) Tj
+0 -20 Td
+(Hospital: ${escape(jobCard.hospitalName)}) Tj
+0 -20 Td
+(Engineer: ${escape(jobCard.engineerName)} (${escape(jobCard.engineerId)})) Tj
+0 -20 Td
+(Machine: ${escape(jobCard.machineType)} - ${escape(jobCard.machineModel)}) Tj
+0 -20 Td
+(Serial Number: ${escape(jobCard.serialNumber)}) Tj
+0 -20 Td
+(Date: ${escape(new Date(jobCard.dateTime).toLocaleString())}) Tj
+0 -30 Td
+(Problem Reported:) Tj
+0 -20 Td
+/F1 10 Tf
+(${escape(jobCard.problemReported)}) Tj
+0 -30 Td
+/F1 12 Tf
+(Service Performed:) Tj
+0 -20 Td
+/F1 10 Tf
+(${escape(jobCard.servicePerformed)}) Tj
+0 -30 Td
+/F1 12 Tf
+(Generated: ${escape(new Date().toLocaleString())}) Tj
+ET`;
+
   return `%PDF-1.4
 1 0 obj
 <<
@@ -301,30 +396,10 @@ endobj
 
 4 0 obj
 <<
-/Length 1000
+/Length ${content.length}
 >>
 stream
-BT
-/F1 12 Tf
-50 750 Td
-(NXS E-JobCard System) Tj
-0 -20 Td
-(Job Card ID: ${jobCard.id}) Tj
-0 -20 Td
-(Hospital: ${jobCard.hospitalName}) Tj
-0 -20 Td
-(Engineer: ${jobCard.engineerName}) Tj
-0 -20 Td
-(Machine: ${jobCard.machineType} - ${jobCard.machineModel}) Tj
-0 -20 Td
-(Serial Number: ${jobCard.serialNumber}) Tj
-0 -20 Td
-(Problem: ${jobCard.problemReported}) Tj
-0 -20 Td
-(Service: ${jobCard.servicePerformed}) Tj
-0 -20 Td
-(Date: ${new Date(jobCard.dateTime).toLocaleString()}) Tj
-ET
+${content}
 endstream
 endobj
 
@@ -350,6 +425,6 @@ trailer
 /Root 1 0 R
 >>
 startxref
-1384
+${1384 + content.length - 1000}
 %%EOF`;
 }
