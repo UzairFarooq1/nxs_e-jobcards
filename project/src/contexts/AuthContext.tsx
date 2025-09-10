@@ -295,25 +295,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const addEngineer = async (engineer: Omit<User, "id">) => {
     try {
-      // First create the user in Supabase Auth
-      const { data: authData, error: authError } =
-        await supabase.auth.admin.createUser({
-          email: engineer.email,
-          password: engineer.password || "password123",
-          email_confirm: true,
-        });
+      // Call backend admin endpoint so service role creates user and inserts row
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_API_URL || "http://localhost:3001"
+        }/api/admin/create-engineer`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-admin-api-key": import.meta.env.VITE_ADMIN_API_KEY || "",
+          },
+          body: JSON.stringify({
+            name: engineer.name,
+            email: engineer.email,
+            engineerId: engineer.engineerId,
+          }),
+        }
+      );
 
-      if (authError) throw authError;
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${response.status}`);
+      }
 
-      // Then add to engineers table (no password stored for security)
-      const { error: dbError } = await supabase.from("engineers").insert({
-        id: authData.user.id,
-        name: engineer.name,
-        email: engineer.email,
-        engineer_id: engineer.engineerId || `ENG-${Date.now()}`,
-      });
-
-      if (dbError) throw dbError;
+      const result = await response.json();
+      console.log("Engineer created:", result);
+      return result;
     } catch (error) {
       console.error("Error adding engineer:", error);
       throw error;

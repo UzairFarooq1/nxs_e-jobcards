@@ -3,6 +3,7 @@ const cors = require("cors");
 const multer = require("multer");
 const nodemailer = require("nodemailer");
 const path = require("path");
+const { createClient } = require("@supabase/supabase-js");
 require("dotenv").config({ path: "./config.env" });
 
 const app = express();
@@ -44,6 +45,15 @@ app.use(
 );
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Supabase Admin client (service role)
+const supabaseAdmin =
+  process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      )
+    : null;
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -214,3 +224,67 @@ app.listen(PORT, async () => {
 });
 
 module.exports = app;
+
+/**
+ * Admin-only endpoint: create engineer in Supabase Auth and insert into engineers table
+ * Security: Requires ADMIN_API_KEY header matching process.env.ADMIN_API_KEY
+ */
+app.post("/api/admin/create-engineer", async (req, res) => {
+  try {
+    if (!supabaseAdmin) {
+      return res
+        .status(500)
+        .json({ success: false, error: "Supabase admin not configured" });
+    }
+
+    const apiKey = req.header("x-admin-api-key") || req.header("admin-api-key");
+    if (!process.env.ADMIN_API_KEY || apiKey !== process.env.ADMIN_API_KEY) {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+
+    const { name, email, engineerId } = req.body || {};
+    if (!name || !email) {
+      return res
+        .status(400)
+        .json({ success: false, error: "name and email are required" });
+    }
+
+    // 1) Create user in Supabase Auth (send invite so engineer sets password)
+    const { data: userData, error: createErr } =
+      await supabaseAdmin.auth.admin.createUser({
+        email,
+        email_confirm: false,
+      });
+    if (createErr) throw createErr;
+
+    const userId = userData.user.id;
+
+    // 2) Generate invite link for engineer to set password
+    const { data: linkData, error: linkErr } =
+      await supabaseAdmin.auth.admin.generateLink({
+        type: "invite",
+        email,
+      });
+    if (linkErr) throw linkErr;
+
+    // 3) Insert into engineers table (no password stored)
+    const { error: dbErr } = await supabaseAdmin.from("engineers").insert({
+      id: userId,
+      name,
+      email,
+      engineer_id: engineerId || `ENG-${Date.now()}`,
+    });
+    if (dbErr) throw dbErr;
+
+    return res.json({
+      success: true,
+      userId,
+      inviteLink: linkData.properties?.action_link,
+    });
+  } catch (error) {
+    console.error("❌ Admin create engineer failed:", error);
+    return res
+      .status(500)
+      .json({ success: false, error: error.message || "Internal error" });
+  }
+});
