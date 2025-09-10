@@ -47,7 +47,7 @@ export function Header({
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <img
-                src="https://drive.usercontent.google.com/download?id=17hPAwmzKS3LKBEn-Kzz-JBD-QM0vF_uq&export=view&authuser=1"
+                src="https://drive.google.com/file/d/17hPAwmzKS3LKBEn-Kzz-JBD-QM0vF_uq/view"
                 alt="NXS Logo"
               />
               <LogoDisplay className="h-8" alt="NXS Logo" />
