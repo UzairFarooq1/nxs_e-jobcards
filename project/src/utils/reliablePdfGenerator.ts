@@ -39,19 +39,26 @@ export const generateReliableJobCardPDF = async (jobCard: JobCard): Promise<Blob
         backgroundColor: '#ffffff'
       });
       
-      // Convert canvas to blob
-      return new Promise((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          // Clean up
-          document.body.removeChild(tempContainer);
-          
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error('Failed to generate PDF blob'));
-          }
-        }, 'application/pdf', 0.95); // High quality
+      // Use jsPDF to create a proper PDF
+      const { jsPDF } = await import('jspdf');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
       });
+      
+      // Convert canvas to image data
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+      
+      // Clean up
+      document.body.removeChild(tempContainer);
+      
+      // Generate PDF blob
+      const pdfBlob = pdf.output('blob');
+      return pdfBlob;
       
     } catch (html2canvasError) {
       console.warn('html2canvas failed, falling back to text-based PDF:', html2canvasError);
@@ -60,15 +67,13 @@ export const generateReliableJobCardPDF = async (jobCard: JobCard): Promise<Blob
       document.body.removeChild(tempContainer);
       
       // Fallback to text-based PDF
-      const pdfContent = generateTextBasedPDF(jobCard);
-      return new Blob([pdfContent], { type: 'application/pdf' });
+      return await generateTextBasedPDF(jobCard);
     }
     
   } catch (error) {
     console.error('Error generating PDF:', error);
     // Final fallback
-    const pdfContent = generateTextBasedPDF(jobCard);
-    return new Blob([pdfContent], { type: 'application/pdf' });
+    return await generateTextBasedPDF(jobCard);
   }
 };
 
@@ -325,106 +330,87 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
 }
 
 /**
- * Generate a simple text-based PDF content as fallback
+ * Generate a simple text-based PDF content as fallback using jsPDF
  */
-function generateTextBasedPDF(jobCard: JobCard): string {
-  // Escape special characters for PDF
-  const escape = (str: string) => str.replace(/[()\\]/g, '\\$&');
-  
-  const content = `BT
-/F1 16 Tf
-50 750 Td
-(NXS E-JobCard System) Tj
-0 -30 Td
-/F1 12 Tf
-(Job Card ID: ${escape(jobCard.id)}) Tj
-0 -20 Td
-(Hospital: ${escape(jobCard.hospitalName)}) Tj
-0 -20 Td
-(Engineer: ${escape(jobCard.engineerName)} (${escape(jobCard.engineerId)})) Tj
-0 -20 Td
-(Machine: ${escape(jobCard.machineType)} - ${escape(jobCard.machineModel)}) Tj
-0 -20 Td
-(Serial Number: ${escape(jobCard.serialNumber)}) Tj
-0 -20 Td
-(Date: ${escape(new Date(jobCard.dateTime).toLocaleString())}) Tj
-0 -30 Td
-(Problem Reported:) Tj
-0 -20 Td
-/F1 10 Tf
-(${escape(jobCard.problemReported)}) Tj
-0 -30 Td
-/F1 12 Tf
-(Service Performed:) Tj
-0 -20 Td
-/F1 10 Tf
-(${escape(jobCard.servicePerformed)}) Tj
-0 -30 Td
-/F1 12 Tf
-(Generated: ${escape(new Date().toLocaleString())}) Tj
-ET`;
+async function generateTextBasedPDF(jobCard: JobCard): Promise<Blob> {
+  try {
+    const { jsPDF } = await import('jspdf');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    // Set font
+    pdf.setFont('helvetica');
+    
+    // Title
+    pdf.setFontSize(20);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('NXS E-JobCard System', 105, 20, { align: 'center' });
+    
+    // Job Card ID
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`Job Card ID: ${jobCard.id}`, 20, 35);
+    
+    // Hospital
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Hospital: ${jobCard.hospitalName}`, 20, 50);
+    
+    // Engineer
+    pdf.text(`Engineer: ${jobCard.engineerName} (${jobCard.engineerId})`, 20, 60);
+    
+    // Machine details
+    pdf.text(`Machine: ${jobCard.machineType} - ${jobCard.machineModel}`, 20, 70);
+    pdf.text(`Serial Number: ${jobCard.serialNumber}`, 20, 80);
+    pdf.text(`Date: ${new Date(jobCard.dateTime).toLocaleString()}`, 20, 90);
+    
+    // Problem Reported
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Problem Reported:', 20, 110);
+    pdf.setFont('helvetica', 'normal');
+    const problemLines = pdf.splitTextToSize(jobCard.problemReported, 170);
+    pdf.text(problemLines, 20, 120);
+    
+    // Service Performed
+    const serviceY = 120 + (problemLines.length * 5) + 10;
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Service Performed:', 20, serviceY);
+    pdf.setFont('helvetica', 'normal');
+    const serviceLines = pdf.splitTextToSize(jobCard.servicePerformed, 170);
+    pdf.text(serviceLines, 20, serviceY + 10);
+    
+    // Footer
+    const footerY = serviceY + 10 + (serviceLines.length * 5) + 20;
+    pdf.setFontSize(10);
+    pdf.text(`Generated: ${new Date().toLocaleString()}`, 20, footerY);
+    pdf.text('Nairobi X-ray Supplies Ltd', 105, footerY, { align: 'center' });
+    
+    return pdf.output('blob');
+  } catch (error) {
+    console.error('Error generating text-based PDF:', error);
+    // Ultimate fallback - create a simple text blob
+    const textContent = `
+NXS E-JobCard System
+Job Card ID: ${jobCard.id}
+Hospital: ${jobCard.hospitalName}
+Engineer: ${jobCard.engineerName} (${jobCard.engineerId})
+Machine: ${jobCard.machineType} - ${jobCard.machineModel}
+Serial Number: ${jobCard.serialNumber}
+Date: ${new Date(jobCard.dateTime).toLocaleString()}
 
-  return `%PDF-1.4
-1 0 obj
-<<
-/Type /Catalog
-/Pages 2 0 R
->>
-endobj
+Problem Reported:
+${jobCard.problemReported}
 
-2 0 obj
-<<
-/Type /Pages
-/Kids [3 0 R]
-/Count 1
->>
-endobj
+Service Performed:
+${jobCard.servicePerformed}
 
-3 0 obj
-<<
-/Type /Page
-/Parent 2 0 R
-/MediaBox [0 0 612 792]
-/Contents 4 0 R
-/Resources <<
-  /Font <<
-    /F1 5 0 R
-  >>
->>
->>
-endobj
-
-4 0 obj
-<<
-/Length ${content.length}
->>
-stream
-${content}
-endstream
-endobj
-
-5 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica
->>
-endobj
-
-xref
-0 6
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000274 00000 n 
-0000001285 00000 n 
-trailer
-<<
-/Size 6
-/Root 1 0 R
->>
-startxref
-${1384 + content.length - 1000}
-%%EOF`;
+Generated: ${new Date().toLocaleString()}
+Nairobi X-ray Supplies Ltd
+    `.trim();
+    
+    return new Blob([textContent], { type: 'text/plain' });
+  }
 }

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Generation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f0f9ff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>PDF Generation Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Job Card PDF Generation</h2>
+        <p>This will test the PDF generation for email attachments.</p>
+        <button onclick="testPDFGeneration()">Generate Test PDF</button>
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script type="module">
+        // Mock job card data for testing
+        const testJobCard = {
+            id: "NXS-00001",
+            hospitalName: "Test Hospital",
+            facilitySignature: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+            machineType: "X-Ray Machine",
+            machineModel: "Test Model 2024",
+            serialNumber: "SN123456789",
+            problemReported: "Machine not powering on. Error code 404 displayed on screen.",
+            servicePerformed: "Replaced power supply unit and updated firmware. Machine now functioning normally.",
+            engineerName: "Test Engineer",
+            engineerId: "ENG001",
+            dateTime: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            status: "completed",
+            beforeServiceImages: [],
+            afterServiceImages: [],
+            facilityStampImage: ""
+        };
+
+        window.testPDFGeneration = async function() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Generating PDF...';
+
+            try {
+                // Import the PDF generation function
+                const { generateReliableJobCardPDF } = await import('./src/utils/reliablePdfGenerator.ts');
+                
+                // Generate PDF
+                const pdfBlob = await generateReliableJobCardPDF(testJobCard);
+                
+                // Test if it's a valid PDF
+                const isValidPDF = pdfBlob.type === 'application/pdf' && pdfBlob.size > 0;
+                
+                resultDiv.innerHTML = `
+                    <h3>PDF Generation Result:</h3>
+                    <p><strong>Status:</strong> ${isValidPDF ? '✅ Success' : '❌ Failed'}</p>
+                    <p><strong>Type:</strong> ${pdfBlob.type}</p>
+                    <p><strong>Size:</strong> ${pdfBlob.size} bytes</p>
+                    <p><strong>Valid PDF:</strong> ${isValidPDF ? 'Yes' : 'No'}</p>
+                    <br>
+                    <button onclick="downloadPDF()">Download Test PDF</button>
+                `;
+                
+                // Store blob for download
+                window.testPDFBlob = pdfBlob;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>PDF Generation Error:</h3>
+                    <p style="color: red;"><strong>Error:</strong> ${error.message}</p>
+                    <pre>${error.stack}</pre>
+                `;
+            }
+        };
+
+        window.downloadPDF = function() {
+            if (window.testPDFBlob) {
+                const url = URL.createObjectURL(window.testPDFBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'test-jobcard.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        };
+    </script>
+</body>
+</html>
