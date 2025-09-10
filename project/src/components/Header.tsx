@@ -46,6 +46,7 @@ export function Header({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
+              <img src="../images/techno.png" alt="NXS Logo" className="h-8" />
               <LogoDisplay className="h-8" alt="NXS Logo" />
               <div>
                 <h1 className="text-lg font-bold text-gray-900">
