@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   Download,
@@ -18,8 +18,15 @@ interface EngineerDashboardProps {
 
 export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
   const { user } = useAuth();
-  const { getJobCardsByEngineerId, isLoading } = useJobCard();
+  const { getJobCardsByEngineerId, isLoading, loadJobCardsIfAuthenticated } = useJobCard();
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Load job cards when component mounts and user is authenticated
+  useEffect(() => {
+    if (user) {
+      loadJobCardsIfAuthenticated();
+    }
+  }, [user, loadJobCardsIfAuthenticated]);
 
   const jobCards = user?.engineerId
     ? getJobCardsByEngineerId(user.engineerId)

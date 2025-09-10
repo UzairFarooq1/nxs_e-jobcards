@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import { supabase } from "../config/supabase";
 import { generateNextJobCardId } from "../utils/jobCardIdGenerator";
 
@@ -33,6 +33,7 @@ interface JobCardContextType {
   isDriveInitialized: boolean;
   isLoading: boolean;
   refreshJobCards: () => Promise<void>;
+  loadJobCardsIfAuthenticated: () => Promise<void>;
 }
 
 const JobCardContext = createContext<JobCardContextType | undefined>(undefined);
@@ -48,12 +49,7 @@ export function useJobCard() {
 export function JobCardProvider({ children }: { children: React.ReactNode }) {
   const [jobCards, setJobCards] = useState<JobCard[]>([]);
   const [isDriveInitialized, setIsDriveInitialized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Load job cards from Supabase
-    loadJobCards();
-  }, []);
+  const [isLoading, setIsLoading] = useState(false); // Start as false, only load when user is authenticated
 
   const loadJobCards = async () => {
     setIsLoading(true);
@@ -132,6 +128,13 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
 
   const refreshJobCards = async () => {
     await loadJobCards();
+  };
+
+  // Function to load job cards when user is authenticated
+  const loadJobCardsIfAuthenticated = async () => {
+    if (jobCards.length === 0 && !isLoading) {
+      await loadJobCards();
+    }
   };
 
   const addJobCard = async (
@@ -242,6 +245,7 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
         isDriveInitialized,
         isLoading,
         refreshJobCards,
+        loadJobCardsIfAuthenticated,
       }}
     >
       {children}

@@ -21,7 +21,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { generateJobCardPDF } from "../utils/pdfGenerator";
 
 export function AdminDashboard() {
-  const { getAllJobCards } = useJobCard();
+  const { getAllJobCards, loadJobCardsIfAuthenticated } = useJobCard();
   const { getAllUsers, addEngineer, editEngineer } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
@@ -46,7 +46,8 @@ export function AdminDashboard() {
 
   useEffect(() => {
     loadEngineers();
-  }, []);
+    loadJobCardsIfAuthenticated();
+  }, [loadJobCardsIfAuthenticated]);
 
   const loadEngineers = async () => {
     try {
