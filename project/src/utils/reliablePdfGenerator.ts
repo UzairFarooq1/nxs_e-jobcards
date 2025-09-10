@@ -6,76 +6,86 @@ import { JobCard } from '../contexts/JobCardContext';
  */
 export const generateReliableJobCardPDF = async (jobCard: JobCard): Promise<Blob> => {
   try {
-    // Create a temporary container for PDF generation
-    const tempContainer = document.createElement('div');
-    tempContainer.style.position = 'absolute';
-    tempContainer.style.left = '-9999px';
-    tempContainer.style.top = '-9999px';
-    tempContainer.style.width = '210mm'; // A4 width
-    tempContainer.style.height = '297mm'; // A4 height
-    tempContainer.style.background = 'white';
-    tempContainer.style.padding = '20px';
-    tempContainer.style.boxSizing = 'border-box';
+    // Try the visual PDF generation first
+    const visualPdf = await generateVisualPDF(jobCard);
     
-    // Generate HTML content
-    const htmlContent = generatePDFHTMLContent(jobCard);
-    tempContainer.innerHTML = htmlContent;
-    
-    // Add to DOM temporarily
-    document.body.appendChild(tempContainer);
-    
-    try {
-      // Wait for images to load
-      await waitForImages(tempContainer);
-      
-      // Use html2canvas to convert to canvas
-      const html2canvas = (await import('html2canvas')).default;
-      const canvas = await html2canvas(tempContainer, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        width: 794, // A4 width in pixels at 96 DPI
-        height: 1123, // A4 height in pixels at 96 DPI
-        backgroundColor: '#ffffff'
-      });
-      
-      // Use jsPDF to create a proper PDF
-      const { jsPDF } = await import('jspdf');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      // Convert canvas to image data
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      
-      // Add image to PDF
-      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
-      
-      // Clean up
-      document.body.removeChild(tempContainer);
-      
-      // Generate PDF blob
-      const pdfBlob = pdf.output('blob');
-      return pdfBlob;
-      
-    } catch (html2canvasError) {
-      console.warn('html2canvas failed, falling back to text-based PDF:', html2canvasError);
-      
-      // Clean up
-      document.body.removeChild(tempContainer);
-      
-      // Fallback to text-based PDF
+    // Check if the PDF is too large (> 5MB)
+    if (visualPdf.size > 5 * 1024 * 1024) {
+      console.warn('PDF too large, falling back to text-based PDF');
       return await generateTextBasedPDF(jobCard);
     }
     
+    return visualPdf;
+    
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    // Final fallback
+    console.error('Error generating visual PDF, falling back to text-based PDF:', error);
     return await generateTextBasedPDF(jobCard);
   }
 };
+
+/**
+ * Generate visual PDF using html2canvas and jsPDF
+ */
+async function generateVisualPDF(jobCard: JobCard): Promise<Blob> {
+  // Create a temporary container for PDF generation
+  const tempContainer = document.createElement('div');
+  tempContainer.style.position = 'absolute';
+  tempContainer.style.left = '-9999px';
+  tempContainer.style.top = '-9999px';
+  tempContainer.style.width = '210mm'; // A4 width
+  tempContainer.style.height = '297mm'; // A4 height
+  tempContainer.style.background = 'white';
+  tempContainer.style.padding = '20px';
+  tempContainer.style.boxSizing = 'border-box';
+  
+  // Generate HTML content
+  const htmlContent = generatePDFHTMLContent(jobCard);
+  tempContainer.innerHTML = htmlContent;
+  
+  // Add to DOM temporarily
+  document.body.appendChild(tempContainer);
+  
+  try {
+    // Wait for images to load
+    await waitForImages(tempContainer);
+    
+    // Use html2canvas to convert to canvas
+    const html2canvas = (await import('html2canvas')).default;
+    const canvas = await html2canvas(tempContainer, {
+      scale: 1.5, // Reduced scale for smaller file size
+      useCORS: true,
+      allowTaint: true,
+      width: 794, // A4 width in pixels at 96 DPI
+      height: 1123, // A4 height in pixels at 96 DPI
+      backgroundColor: '#ffffff'
+    });
+    
+    // Use jsPDF to create a proper PDF
+    const { jsPDF } = await import('jspdf');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    // Convert canvas to image data with compression
+    const imgData = canvas.toDataURL('image/jpeg', 0.8); // JPEG with 80% quality
+    
+    // Add image to PDF
+    pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    
+    // Clean up
+    document.body.removeChild(tempContainer);
+    
+    // Generate PDF blob
+    return pdf.output('blob');
+    
+  } catch (error) {
+    // Clean up
+    document.body.removeChild(tempContainer);
+    throw error;
+  }
+}
 
 /**
  * Wait for all images in the container to load
