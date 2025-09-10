@@ -135,12 +135,25 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
         }
         
         .logo-container {
-          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           margin-bottom: 15px;
+          gap: 15px;
+        }
+        
+        .logo {
+          height: 60px;
+          width: auto;
+          object-fit: contain;
+        }
+        
+        .company-info {
+          text-align: left;
         }
         
         .company-name {
-          font-size: 32px;
+          font-size: 28px;
           font-weight: bold;
           color: #2563eb;
           margin-bottom: 5px;
@@ -266,8 +279,11 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
     <body>
       <div class="header">
         <div class="logo-container">
-          <div class="company-name">NXS</div>
-          <div class="company-subtitle">Nairobi X-ray Supplies Ltd</div>
+          <img src="https://drive.google.com/uc?export=view&id=17hPAwmzKS3LKBEn-Kzz-JBD-QM0vF_uq" alt="NXS Logo" class="logo" />
+          <div class="company-info">
+            <div class="company-name">NXS</div>
+            <div class="company-subtitle">Nairobi X-ray Supplies Ltd</div>
+          </div>
         </div>
         <div class="job-card-title">E-JobCard System</div>
         <div class="job-id">Job Card ID: ${jobCard.id}</div>

@@ -10,15 +10,27 @@ export function LogoDisplay({
   alt = "NXS Logo",
 }: LogoDisplayProps) {
   const [logoError, setLogoError] = useState(false);
-  const [currentPath, setCurrentPath] = useState("/static/images/logomain.png");
+  const [currentPath, setCurrentPath] = useState(
+    "https://drive.google.com/uc?export=view&id=17hPAwmzKS3LKBEn-Kzz-JBD-QM0vF_uq"
+  );
 
   const logoPaths = [
-    "/static/images/logomain.png", // Only path we need
+    "https://drive.google.com/uc?export=view&id=17hPAwmzKS3LKBEn-Kzz-JBD-QM0vF_uq", // Google Drive logo
+    "/static/images/logomain.png", // Fallback to local logo
   ];
 
   const handleError = () => {
     console.error(`Logo failed to load: ${currentPath}`);
-    setLogoError(true);
+
+    // Try fallback logo if current one failed
+    const currentIndex = logoPaths.indexOf(currentPath);
+    if (currentIndex < logoPaths.length - 1) {
+      const nextPath = logoPaths[currentIndex + 1];
+      console.log(`Trying fallback logo: ${nextPath}`);
+      setCurrentPath(nextPath);
+    } else {
+      setLogoError(true);
+    }
   };
 
   const handleLoad = () => {

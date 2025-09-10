@@ -1,13 +1,5 @@
-import React, { useState, useEffect } from "react";
-import {
-  Shield,
-  LogOut,
-  FileText,
-  BarChart3,
-  Plus,
-  Cloud,
-  Clock,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { LogOut, BarChart3, Plus, Cloud, Clock } from "lucide-react";
 import { User } from "../contexts/AuthContext";
 import { useJobCard } from "../contexts/JobCardContext";
 import { getInactivityManager } from "../utils/inactivityManager";
@@ -54,11 +46,6 @@ export function Header({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <img
-                src={"../images/logomain.png"}
-                alt="NXS Logo"
-                className="h-8"
-              />
               <LogoDisplay className="h-8" alt="NXS Logo" />
               <div>
                 <h1 className="text-lg font-bold text-gray-900">
