@@ -12,7 +12,7 @@ import { User } from "../contexts/AuthContext";
 import { useJobCard } from "../contexts/JobCardContext";
 import { getInactivityManager } from "../utils/inactivityManager";
 import { LogoDisplay } from "./LogoDisplay";
-import logo from "../assets/logo.png";
+import logo from "../images/logomain.png
 
 interface HeaderProps {
   user: User;
