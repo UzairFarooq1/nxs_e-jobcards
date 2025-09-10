@@ -46,6 +46,12 @@ export function Header({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
+              <img
+                src="https://drive.google.com/uc?export=view&id=17hPAwmzKS3LKBEn-Kzz-JBD-QM0vF_uq"
+                alt="Google Drive Image"
+                className="rounded-xl shadow-md"
+              />
+
               <img src="../images/techno.png" alt="NXS Logo" className="h-8" />
               <LogoDisplay className="h-8" alt="NXS Logo" />
               <div>
