@@ -20,6 +20,15 @@ app.options("*", (req, res) => {
   res.status(200).end();
 });
 
+// Add CSP headers for Google Drive images
+app.use((req, res, next) => {
+  res.header(
+    "Content-Security-Policy",
+    "default-src 'self'; img-src 'self' data: https://drive.google.com https://*.googleusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel.app https://*.supabase.co; font-src 'self' data:;"
+  );
+  next();
+});
+
 // Middleware
 app.use(
   cors({
