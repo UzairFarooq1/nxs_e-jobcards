@@ -12,7 +12,6 @@ import { User } from "../contexts/AuthContext";
 import { useJobCard } from "../contexts/JobCardContext";
 import { getInactivityManager } from "../utils/inactivityManager";
 import { LogoDisplay } from "./LogoDisplay";
-import logo from "../images/logomain.png
 
 interface HeaderProps {
   user: User;
@@ -55,7 +54,11 @@ export function Header({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <img src={logo} alt="NXS Logo" className="h-8" />
+              <img
+                src={"../images/logomain.png"}
+                alt="NXS Logo"
+                className="h-8"
+              />
               <LogoDisplay className="h-8" alt="NXS Logo" />
               <div>
                 <h1 className="text-lg font-bold text-gray-900">
