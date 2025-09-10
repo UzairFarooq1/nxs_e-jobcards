@@ -75,6 +75,6 @@ VITE_ADMIN_API_KEY=your_secure_random_string_here
 
 ## Files Modified
 
-- `server/server.js` - Added `/api/admin/create-engineer` endpoint
+- `backend/index.js` - Added `/api/admin/create-engineer` endpoint
 - `src/contexts/AuthContext.tsx` - Updated `addEngineer` to call backend
-- `server/package.json` - Added `@supabase/supabase-js` dependency
+- `backend/package.json` - Added `@supabase/supabase-js` dependency
