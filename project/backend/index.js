@@ -199,15 +199,20 @@ app.post("/api/admin/create-engineer", async (req, res) => {
   }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 NXS Backend Server running on port ${PORT}`);
-  console.log(
-    `📧 SMTP configured: ${!!(
-      process.env.SMTP_HOST &&
-      process.env.SMTP_USER &&
-      process.env.SMTP_PASS
-    )}`
-  );
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
-});
+// Export the app for Vercel
+export default app;
+
+// Start server only in development
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`🚀 NXS Backend Server running on port ${PORT}`);
+    console.log(
+      `📧 SMTP configured: ${!!(
+        process.env.SMTP_HOST &&
+        process.env.SMTP_USER &&
+        process.env.SMTP_PASS
+      )}`
+    );
+    console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+  });
+}
