@@ -296,23 +296,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const addEngineer = async (engineer: Omit<User, "id">) => {
     try {
       // Call backend admin endpoint so service role creates user and inserts row
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_API_URL || "http://localhost:3001"
-        }/api/admin/create-engineer`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-admin-api-key": import.meta.env.VITE_ADMIN_API_KEY || "",
-          },
-          body: JSON.stringify({
-            name: engineer.name,
-            email: engineer.email,
-            engineerId: engineer.engineerId,
-          }),
-        }
-      );
+      const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+      const apiUrl = baseUrl.endsWith("/api") ? baseUrl : `${baseUrl}/api`;
+
+      const response = await fetch(`${apiUrl}/admin/create-engineer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-api-key": import.meta.env.VITE_ADMIN_API_KEY || "",
+        },
+        body: JSON.stringify({
+          name: engineer.name,
+          email: engineer.email,
+          engineerId: engineer.engineerId,
+        }),
+      });
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
