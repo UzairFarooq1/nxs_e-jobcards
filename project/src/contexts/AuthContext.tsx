@@ -298,8 +298,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Call backend admin endpoint so service role creates user and inserts row
       const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
       const apiUrl = baseUrl.endsWith("/api") ? baseUrl : `${baseUrl}/api`;
+      const fullUrl = `${apiUrl}/admin/create-engineer`;
 
-      const response = await fetch(`${apiUrl}/admin/create-engineer`, {
+      console.log("🔧 DEBUG - Adding engineer via backend:");
+      console.log("  Base URL:", baseUrl);
+      console.log("  API URL:", apiUrl);
+      console.log("  Full URL:", fullUrl);
+      console.log("  API Key set:", !!import.meta.env.VITE_ADMIN_API_KEY);
+      console.log("  Engineer data:", engineer);
+
+      const response = await fetch(fullUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -312,16 +320,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }),
       });
 
+      console.log("🔧 DEBUG - Response status:", response.status);
+      console.log(
+        "🔧 DEBUG - Response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
+
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || `HTTP ${response.status}`);
+        const responseText = await response.text();
+        console.log("🔧 DEBUG - Error response text:", responseText);
+
+        let err = {};
+        try {
+          err = JSON.parse(responseText);
+        } catch (e) {
+          err = { error: responseText };
+        }
+        throw new Error(
+          err.error || `HTTP ${response.status}: ${responseText}`
+        );
       }
 
       const result = await response.json();
-      console.log("Engineer created:", result);
+      console.log("✅ Engineer created successfully:", result);
       return result;
     } catch (error) {
-      console.error("Error adding engineer:", error);
+      console.error("❌ Error adding engineer:", error);
       throw error;
     }
   };
