@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Shield, User, Lock } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { LogoDisplay } from "./LogoDisplay";
 
 export function LoginForm() {
   const { login, isLoading } = useAuth();
@@ -25,13 +24,14 @@ export function LoginForm() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <LogoDisplay className="h-12" alt="NXS Logo" />
+          <div className="mb-4">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              NXS E-JobCard
+            </h1>
+            <p className="text-sm text-gray-600">
+              Nairobi X-ray Supplies Limited
+            </p>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Nairobi X-ray Supplies Ltd
-          </h1>
-          <p className="text-gray-600">E-JobCard System</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
