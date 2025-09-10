@@ -52,7 +52,6 @@ export function Header({
                 className="rounded-xl shadow-md"
               />
 
-              <img src="../images/techno.png" alt="NXS Logo" className="h-8" />
               <LogoDisplay className="h-8" alt="NXS Logo" />
               <div>
                 <h1 className="text-lg font-bold text-gray-900">
