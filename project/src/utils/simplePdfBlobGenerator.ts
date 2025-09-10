@@ -137,7 +137,7 @@ function generateSimpleHTMLContent(jobCard: JobCard): string {
     </head>
     <body>
       <div class="header">
-        <img src="/static/images/logomain.png" alt="NXS Logo" class="logo" />
+        <img src="/static/images/logo.jpg" alt="NXS Logo" class="logo" />
         <div class="job-card-title">E-JobCard System</div>
         <div class="job-id">Job Card ID: ${jobCard.id}</div>
       </div>

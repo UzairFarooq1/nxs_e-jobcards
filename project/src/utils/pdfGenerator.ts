@@ -106,7 +106,7 @@ export function generateJobCardPDF(jobCard: JobCard) {
     <body>
       <div class="header">
         <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
-          <img src="/static/images/logomain.png" alt="NXS Logo" style="height: 50px; max-width: 200px;" />
+          <img src="/static/images/logo.jpg" alt="NXS Logo" style="height: 50px; max-width: 200px;" />
         </div>
         <div class="job-card-title">E-JobCard System</div>
         <div class="job-id">Job Card ID: ${jobCard.id}</div>

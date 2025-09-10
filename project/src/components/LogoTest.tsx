@@ -1,12 +1,7 @@
 import React from "react";
 
 export function LogoTest() {
-  const logoPaths = [
-    "/logomain.png",
-    "./logomain.png",
-    "logomain.png",
-    "/public/logomain.png",
-  ];
+  const logoPaths = ["/logo.jpg", "./logo.jpg", "logo.jpg", "/public/logo.jpg"];
 
   return (
     <div className="p-4 bg-green-50 rounded-lg border border-green-200">

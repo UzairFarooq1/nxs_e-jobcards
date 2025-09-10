@@ -261,7 +261,7 @@ export const generateJobCardEmailHTML = (jobCard: JobCard): string => {
     <body>
       <div class="email-container">
         <div class="header">
-          <img src="/static/images/logomain.png" alt="NXS Logo" class="logo" />
+          <img src="/static/images/logo.jpg" alt="NXS Logo" class="logo" />
           <h1>New Job Card Submitted</h1>
           <p>E-JobCard System Notification</p>
         </div>

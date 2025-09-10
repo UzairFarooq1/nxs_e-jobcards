@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface LogoDisplayProps {
   className?: string;
@@ -16,7 +16,7 @@ export function LogoDisplay({
 
   const logoPaths = [
     "https://drive.google.com/uc?export=view&id=17hPAwmzKS3LKBEn-Kzz-JBD-QM0vF_uq", // Google Drive logo
-    "/static/images/logomain.png", // Fallback to local logo
+    "/static/images/logo.jpg", // Fallback to local logo
   ];
 
   const handleError = () => {

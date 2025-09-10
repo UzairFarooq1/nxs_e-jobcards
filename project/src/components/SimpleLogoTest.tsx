@@ -7,7 +7,7 @@ export function SimpleLogoTest() {
         Simple Logo Test
       </h3>
       <p className="text-sm text-blue-600 mb-4">
-        Testing the logo with the correct filename: logomain.png
+        Testing the logo with the correct filename: logo.jpg
       </p>
 
       <div className="space-y-4">
@@ -15,25 +15,25 @@ export function SimpleLogoTest() {
         <div className="flex items-center space-x-4 p-3 bg-white rounded border">
           <div className="w-16 h-16 border border-gray-300 rounded flex items-center justify-center">
             <img
-              src="/static/images/logomain.png"
+              src="/static/images/logo.jpg"
               alt="Logo test 1"
               className="max-w-full max-h-full object-contain"
               onError={(e) => {
                 console.error(
-                  "❌ Logo failed to load: /static/images/logomain.png"
+                  "❌ Logo failed to load: /static/images/logo.jpg"
                 );
                 e.currentTarget.style.display = "none";
               }}
               onLoad={() => {
                 console.log(
-                  "✅ Logo loaded successfully: /static/images/logomain.png"
+                  "✅ Logo loaded successfully: /static/images/logo.jpg"
                 );
               }}
             />
           </div>
           <div>
             <p className="text-sm font-medium">
-              Path: <code>/static/images/logomain.png</code>
+              Path: <code>/static/images/logo.jpg</code>
             </p>
             <p className="text-xs text-gray-500">
               New location (public/static/images/)
@@ -46,12 +46,12 @@ export function SimpleLogoTest() {
           <p className="text-sm text-yellow-800">
             <strong>Direct URL Test:</strong> Try accessing{" "}
             <a
-              href="/static/images/logomain.png"
+              href="/static/images/logo.jpg"
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-600 underline"
             >
-              /static/images/logomain.png
+              /static/images/logo.jpg
             </a>{" "}
             directly in your browser
           </p>
@@ -60,11 +60,10 @@ export function SimpleLogoTest() {
         {/* Test 3: Single path confirmation */}
         <div className="p-3 bg-gray-50 border border-gray-200 rounded">
           <p className="text-sm text-gray-800">
-            <strong>Using only:</strong>{" "}
-            <code>/static/images/logomain.png</code>
+            <strong>Using only:</strong> <code>/static/images/logo.jpg</code>
             <br />
             <strong>Location:</strong>{" "}
-            <code>public/static/images/logomain.png</code>
+            <code>public/static/images/logo.jpg</code>
           </p>
         </div>
       </div>
