@@ -205,6 +205,9 @@ app.post("/api/admin/create-engineer", async (req, res) => {
       await supabaseAdmin.auth.admin.generateLink({
         type: "invite",
         email,
+        options: {
+          redirectTo: "https://nxs-e-jobcards.vercel.app/auth/callback",
+        },
       });
     if (linkErr) throw linkErr;
 
