@@ -7,8 +7,39 @@ import { createClient } from "@supabase/supabase-js";
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
-app.use(cors());
+// CORS middleware - must be before other middleware
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5500",
+    "https://nxs-e-jobcards.vercel.app",
+    "https://nxs-e-jobcards-frontend.vercel.app",
+  ];
+
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  } else {
+    res.header("Access-Control-Allow-Origin", "*");
+  }
+
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With, x-admin-api-key"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
+    return;
+  }
+
+  next();
+});
+
+// Other middleware
 app.use(express.json());
 
 // Configure multer for memory storage
@@ -186,10 +217,70 @@ app.post("/api/admin/create-engineer", async (req, res) => {
     });
     if (dbErr) throw dbErr;
 
+    // 4) Send invite email to engineer
+    const inviteLink = linkData.properties?.action_link;
+    if (inviteLink) {
+      try {
+        const transporter = createTransporter();
+        const mailOptions = {
+          from: process.env.SMTP_USER,
+          to: email,
+          subject: "Welcome to NXS E-JobCard System - Set Your Password",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <h2 style="color: #2563eb; text-align: center;">Welcome to NXS E-JobCard System</h2>
+              
+              <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p>Hello <strong>${name}</strong>,</p>
+                
+                <p>An admin has created an account for you in the NXS E-JobCard System. To complete your account setup, please click the button below to set your password:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${inviteLink}" 
+                     style="background-color: #2563eb; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                    Set Your Password
+                  </a>
+                </div>
+                
+                <p><strong>Your Account Details:</strong></p>
+                <ul>
+                  <li><strong>Name:</strong> ${name}</li>
+                  <li><strong>Email:</strong> ${email}</li>
+                  <li><strong>Engineer ID:</strong> ${
+                    engineerId || `ENG-${Date.now()}`
+                  }</li>
+                </ul>
+                
+                <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                  <strong>Note:</strong> This invite link will expire in 24 hours. If you don't set your password within this time, please contact your administrator.
+                </p>
+                
+                <p style="color: #666; font-size: 14px;">
+                  If the button doesn't work, you can copy and paste this link into your browser:<br>
+                  <a href="${inviteLink}" style="color: #2563eb; word-break: break-all;">${inviteLink}</a>
+                </p>
+              </div>
+              
+              <div style="text-align: center; color: #666; font-size: 12px; margin-top: 30px;">
+                <p>This email was sent by the NXS E-JobCard System</p>
+              </div>
+            </div>
+          `,
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Invite email sent successfully to ${email}`);
+      } catch (emailError) {
+        console.error("⚠️ Failed to send invite email:", emailError);
+        // Don't fail the entire operation if email fails
+      }
+    }
+
     return res.json({
       success: true,
       userId,
-      inviteLink: linkData.properties?.action_link,
+      inviteLink,
+      message: `Engineer account created successfully. Invite email sent to ${email}`,
     });
   } catch (error) {
     console.error("❌ Admin create engineer failed:", error);
