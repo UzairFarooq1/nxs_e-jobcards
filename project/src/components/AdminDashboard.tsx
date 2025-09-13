@@ -29,6 +29,7 @@ export function AdminDashboard() {
     "dashboard"
   );
   const [engineers, setEngineers] = useState<any[]>([]);
+  const [engineersLoading, setEngineersLoading] = useState(true);
   const [editingEngineer, setEditingEngineer] = useState<string | null>(null);
   const [newEngineer, setNewEngineer] = useState({
     name: "",
@@ -45,16 +46,24 @@ export function AdminDashboard() {
   const allJobCards = getAllJobCards();
 
   useEffect(() => {
+    // Only load data once when component mounts
     loadEngineers();
     loadJobCardsIfAuthenticated();
-  }, [loadJobCardsIfAuthenticated]);
+  }, []); // Remove loadJobCardsIfAuthenticated dependency to prevent continuous loading
 
   const loadEngineers = async () => {
     try {
+      setEngineersLoading(true);
+      console.log("🔄 Loading engineers...");
       const users = await getAllUsers();
-      setEngineers(users.filter((user) => user.role === "engineer"));
+      const engineerUsers = users.filter((user) => user.role === "engineer");
+      console.log("✅ Loaded engineers:", engineerUsers.length);
+      setEngineers(engineerUsers);
     } catch (error) {
-      console.error("Error loading engineers:", error);
+      console.error("❌ Error loading engineers:", error);
+      setEngineers([]);
+    } finally {
+      setEngineersLoading(false);
     }
   };
 

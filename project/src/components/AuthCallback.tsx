@@ -13,8 +13,12 @@ export function AuthCallback() {
     const handleAuthCallback = async () => {
       try {
         // Check if this is an invite callback
-        const urlParams = new URLSearchParams(window.location.search);
+        const searchParams = window.location.search || "";
+        console.log("Auth callback - search params:", searchParams);
+
+        const urlParams = new URLSearchParams(searchParams);
         const type = urlParams.get("type");
+        console.log("Auth callback - type:", type);
 
         if (type === "invite") {
           setMessage("Setting up your account...");
@@ -57,9 +61,15 @@ export function AuthCallback() {
       } catch (error) {
         console.error("Auth callback error:", error);
         setStatus("error");
-        setMessage(
-          "An error occurred during authentication. Please try again."
-        );
+        if (error instanceof Error) {
+          setMessage(
+            `Authentication error: ${error.message}. Please try again or contact support.`
+          );
+        } else {
+          setMessage(
+            "An error occurred during authentication. Please try again."
+          );
+        }
       }
     };
 

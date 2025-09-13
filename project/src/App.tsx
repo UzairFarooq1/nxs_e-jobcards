@@ -16,9 +16,17 @@ function AppContent() {
   >("dashboard");
 
   // Check if this is an auth callback
-  const isAuthCallback =
-    window.location.pathname === "/auth/callback" ||
-    window.location.search.includes("type=invite");
+  const isAuthCallback = React.useMemo(() => {
+    try {
+      const pathname = window.location.pathname || "";
+      const search = window.location.search || "";
+
+      return pathname === "/auth/callback" || search.includes("type=invite");
+    } catch (error) {
+      console.error("Error checking auth callback:", error);
+      return false;
+    }
+  }, []);
 
   if (isAuthCallback) {
     return <AuthCallback />;

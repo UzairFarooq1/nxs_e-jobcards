@@ -26,7 +26,7 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
     if (user) {
       loadJobCardsIfAuthenticated();
     }
-  }, [user, loadJobCardsIfAuthenticated]);
+  }, [user]); // Remove loadJobCardsIfAuthenticated dependency to prevent continuous loading
 
   const jobCards = user?.engineerId
     ? getJobCardsByEngineerId(user.engineerId)

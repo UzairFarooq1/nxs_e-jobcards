@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { supabase } from "../config/supabase";
 import { generateNextJobCardId } from "../utils/jobCardIdGenerator";
 
@@ -131,11 +131,11 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Function to load job cards when user is authenticated
-  const loadJobCardsIfAuthenticated = async () => {
+  const loadJobCardsIfAuthenticated = useCallback(async () => {
     if (jobCards.length === 0 && !isLoading) {
       await loadJobCards();
     }
-  };
+  }, [jobCards.length, isLoading]);
 
   const addJobCard = async (
     jobCardData: Omit<JobCard, "id" | "createdAt">

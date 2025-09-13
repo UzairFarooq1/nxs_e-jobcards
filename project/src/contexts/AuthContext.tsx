@@ -299,6 +299,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const baseUrl =
         import.meta.env.VITE_API_URL ||
         "https://nxs-e-jobcards-back-gkiszeac9-cyber-guys-projects.vercel.app";
+
+      // Ensure baseUrl is valid
+      if (
+        !baseUrl ||
+        (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://"))
+      ) {
+        throw new Error("Invalid API URL configuration");
+      }
+
       const apiUrl = baseUrl.endsWith("/api") ? baseUrl : `${baseUrl}/api`;
       const fullUrl = `${apiUrl}/admin/create-engineer`;
 
