@@ -7,10 +7,12 @@ export function SessionTimeoutWarning() {
   const [timeLeft, setTimeLeft] = useState(60);
 
   useEffect(() => {
+    console.log("🔔 Setting up session timeout warning");
     const inactivityManager = getInactivityManager();
     
     // Set up warning callback
     inactivityManager.onWarning(() => {
+      console.log("⚠️ Showing session timeout warning");
       setShowWarning(true);
       setTimeLeft(60);
       
@@ -28,12 +30,14 @@ export function SessionTimeoutWarning() {
       return () => clearInterval(countdown);
     });
 
+    // Don't destroy the inactivity manager here since AuthContext manages it
     return () => {
-      inactivityManager.destroy();
+      console.log("🧹 Cleaning up session timeout warning");
     };
   }, []);
 
   const handleExtendSession = () => {
+    console.log("⏰ User extended session");
     setShowWarning(false);
     // Reset the inactivity timer
     const inactivityManager = getInactivityManager();
@@ -41,9 +45,11 @@ export function SessionTimeoutWarning() {
   };
 
   const handleLogout = () => {
+    console.log("🔐 User chose to logout from warning");
     setShowWarning(false);
-    // Clear all data and reload
+    // Clear all data and reload to ensure clean logout
     localStorage.clear();
+    sessionStorage.clear();
     window.location.reload();
   };
 

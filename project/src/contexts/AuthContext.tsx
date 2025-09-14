@@ -67,16 +67,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
+      console.log("🔄 Initializing inactivity manager for user:", user.name);
+      
       // Initialize inactivity manager when user logs in
       const inactivityManager = getInactivityManager();
       inactivityManager.start(() => {
+        console.log("⏰ Inactivity timeout triggered - logging out user");
         // Logout callback
         logout();
       });
+      
+      console.log("✅ Inactivity manager started with 5-minute timeout");
 
       return () => {
+        console.log("🧹 Cleaning up inactivity manager");
         inactivityManager.destroy();
       };
+    } else {
+      console.log("👤 No user - inactivity manager not needed");
     }
   }, [user]);
 
@@ -243,8 +251,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    try {
+      console.log("🔐 Logging out user...");
+      
+      // Stop and destroy inactivity manager
+      const inactivityManager = getInactivityManager();
+      inactivityManager.destroy();
+      console.log("✅ Inactivity manager destroyed");
+      
+      // Sign out from Supabase
+      await supabase.auth.signOut();
+      console.log("✅ Supabase session signed out");
+      
+      // Clear local state
+      setUser(null);
+      console.log("✅ User state cleared");
+      
+      // Clear all localStorage data
+      localStorage.clear();
+      console.log("✅ LocalStorage cleared");
+      
+      // Clear any cached data
+      sessionStorage.clear();
+      console.log("✅ SessionStorage cleared");
+      
+      console.log("🎉 Logout completed successfully");
+      
+    } catch (error) {
+      console.error("❌ Error during logout:", error);
+      
+      // Force logout even if there's an error
+      setUser(null);
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Reload the page to ensure clean state
+      window.location.reload();
+    }
   };
 
   const addEngineer = async (engineer: Omit<User, "id">) => {

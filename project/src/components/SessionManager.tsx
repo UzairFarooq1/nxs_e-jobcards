@@ -7,19 +7,9 @@ interface SessionManagerProps {
 }
 
 export function SessionManager({ children }: SessionManagerProps) {
-  useEffect(() => {
-    const inactivityManager = getInactivityManager();
-    
-    // Set up warning callback
-    inactivityManager.onWarning(() => {
-      // The warning will be handled by the SessionTimeoutWarning component
-    });
-
-    return () => {
-      inactivityManager.destroy();
-    };
-  }, []);
-
+  // The SessionManager now just renders the children and SessionTimeoutWarning
+  // The inactivity manager is handled by AuthContext and SessionTimeoutWarning
+  
   return (
     <>
       {children}

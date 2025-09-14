@@ -30,9 +30,10 @@ class InactivityManager {
     }
   }
 
-  private resetTimer() {
+  public resetTimer() {
     if (!this.isActive) return;
 
+    console.log("🔄 Resetting inactivity timer - user is active");
     this.clearTimeouts();
     this.startWarningTimer();
     this.startLogoutTimer();
@@ -40,6 +41,7 @@ class InactivityManager {
 
   private startWarningTimer() {
     this.warningTimeoutId = setTimeout(() => {
+      console.log("⚠️ Inactivity warning - 1 minute remaining");
       if (this.warningCallback) {
         this.warningCallback();
       }
@@ -48,6 +50,7 @@ class InactivityManager {
 
   private startLogoutTimer() {
     this.timeoutId = setTimeout(() => {
+      console.log("⏰ Inactivity timeout reached - triggering logout");
       if (this.logoutCallback) {
         this.logoutCallback();
       }
@@ -66,6 +69,7 @@ class InactivityManager {
   }
 
   public start(logoutCallback: () => void) {
+    console.log("🚀 Starting inactivity manager with 5-minute timeout");
     this.logoutCallback = logoutCallback;
     this.isActive = true;
     this.resetTimer();
@@ -87,6 +91,7 @@ class InactivityManager {
   }
 
   public destroy() {
+    console.log("🗑️ Destroying inactivity manager");
     this.stop();
     this.logoutCallback = null;
     this.warningCallback = null;
