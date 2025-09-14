@@ -11,7 +11,7 @@ import {
   Key,
   Car as IdCard,
 } from "lucide-react";
-import { supabase } from "../lib/supabase";
+import { supabase } from "../config/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
 interface Engineer {

@@ -3,10 +3,21 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Validate URL format before creating client
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  console.error('❌ Missing Supabase environment variables');
+  console.error('VITE_SUPABASE_URL:', supabaseUrl);
+  console.error('VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? '[REDACTED]' : 'undefined');
+  throw new Error('Missing Supabase environment variables. Please check your .env file.');
 }
 
+// Validate URL format
+if (!supabaseUrl.startsWith('https://')) {
+  console.error('❌ Invalid Supabase URL format:', supabaseUrl);
+  throw new Error('Invalid Supabase URL format. URL must start with https://');
+}
+
+console.log('✅ Creating Supabase client with URL:', supabaseUrl);
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export type Database = {
