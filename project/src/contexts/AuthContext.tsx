@@ -36,15 +36,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing Supabase session
+    // Check for existing Supabase session with timeout
     const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session?.user) {
-        await loadUserFromSession(session.user);
+      console.log("🔄 Checking for existing session...");
+      
+      // Add timeout to prevent hanging on session check
+      const sessionTimeout = setTimeout(() => {
+        console.error("⏰ Session check timed out - setting loading to false");
+        setIsLoading(false);
+      }, 15000);
+      
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          console.log("📱 Existing session found, loading user data...");
+          await loadUserFromSession(session.user);
+        } else {
+          console.log("🚫 No existing session found");
+        }
+        
+        clearTimeout(sessionTimeout);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("❌ Error checking session:", error);
+        clearTimeout(sessionTimeout);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     getSession();
@@ -172,6 +192,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             name: "Jane Smith",
             engineerId: "ENG-004",
           },
+          {
+            email: "uzair.farooq@nxsltd.com",
+            name: "Uzair Farooq",
+            engineerId: "ENG-005",
+          },
         ];
 
         const knownEngineer = knownEngineers.find(
@@ -188,7 +213,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         } else {
           console.warn("Unknown engineer - logging out user");
-          await supabase.auth.signOut();
+          console.log("💡 To add this user to fallback list, add them to knownEngineers array in AuthContext.tsx");
+          
+          // Sign out and ensure loading state is cleared
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {
+            console.error("Error signing out:", signOutError);
+          }
           setUser(null);
         }
       }
@@ -201,6 +233,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
+    console.log("🔐 Starting login process for:", email);
+
+    // Add overall timeout to prevent login from hanging
+    const loginTimeout = setTimeout(() => {
+      console.error("⏰ Login process timed out after 30 seconds");
+      setIsLoading(false);
+    }, 30000);
 
     try {
       console.log("Attempting login for:", email);
@@ -213,15 +252,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error("Supabase Auth error:", error.message);
+        clearTimeout(loginTimeout);
         setIsLoading(false);
         return false;
       }
 
       if (data.user) {
         console.log("Supabase Auth successful, loading user data...");
-        await loadUserFromSession(data.user);
-        setIsLoading(false);
-        return true;
+        try {
+          await loadUserFromSession(data.user);
+          clearTimeout(loginTimeout);
+          setIsLoading(false);
+          return true;
+        } catch (loadUserError) {
+          console.error("Error loading user data after successful auth:", loadUserError);
+          console.warn("Authentication succeeded but user data loading failed - signing out");
+          
+          // If user data loading fails, sign out to prevent stuck state
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {
+            console.error("Error signing out after failed user load:", signOutError);
+          }
+          
+          setUser(null);
+          clearTimeout(loginTimeout);
+          setIsLoading(false);
+          return false;
+        }
       }
 
       // Fallback: Admin credential check only
@@ -236,15 +294,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: email,
           role: "admin",
         });
+        clearTimeout(loginTimeout);
         setIsLoading(false);
         return true;
       }
 
       console.log("Login failed - invalid credentials or password not set");
+      clearTimeout(loginTimeout);
       setIsLoading(false);
       return false;
     } catch (error) {
       console.error("Login error:", error);
+      clearTimeout(loginTimeout);
       setIsLoading(false);
       return false;
     }
