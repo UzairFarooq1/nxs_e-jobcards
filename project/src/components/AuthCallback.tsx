@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../config/supabase";
 import { useAuth } from "../contexts/AuthContext";
+import { PasswordSetup } from "./PasswordSetup";
 
 export function AuthCallback() {
   const { user } = useAuth();
-  const [status, setStatus] = useState<"loading" | "success" | "error">(
+  const [status, setStatus] = useState<"loading" | "setup" | "success" | "error">(
     "loading"
   );
   const [message, setMessage] = useState("Processing authentication...");
+  const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -31,7 +33,7 @@ export function AuthCallback() {
         console.log("Auth callback - has access token:", !!accessToken);
 
         if (type === "invite" || tokenType === "invite" || accessToken) {
-          setMessage("Setting up your account...");
+          setMessage("Processing invite...");
 
           // Get the current session after the invite process
           const {
@@ -49,16 +51,13 @@ export function AuthCallback() {
           }
 
           if (session?.user) {
-            setStatus("success");
-            setMessage("Account setup successful! Redirecting to login...");
-
-            // Wait a moment then redirect to login
-            setTimeout(() => {
-              window.location.href = "/";
-            }, 2000);
+            console.log("✅ Session found, user needs to set password");
+            setStatus("setup");
+            setNeedsPasswordSetup(true);
+            setMessage("Please set your password to complete account setup");
           } else {
             setStatus("error");
-            setMessage("Please complete the password setup and try again.");
+            setMessage("Session not found. Please try the invite link again.");
           }
         } else {
           // Handle other auth types or redirect to home
@@ -85,6 +84,33 @@ export function AuthCallback() {
 
     handleAuthCallback();
   }, []);
+
+  const handlePasswordSetupSuccess = () => {
+    console.log("✅ Password setup completed successfully");
+    setStatus("success");
+    setMessage("Password set successfully! Redirecting to login...");
+    
+    // Wait a moment then redirect to login
+    setTimeout(() => {
+      window.location.href = "/";
+    }, 2000);
+  };
+
+  const handlePasswordSetupError = (error: string) => {
+    console.error("❌ Password setup failed:", error);
+    setStatus("error");
+    setMessage(`Password setup failed: ${error}`);
+  };
+
+  // Show password setup form if needed
+  if (needsPasswordSetup && status === "setup") {
+    return (
+      <PasswordSetup 
+        onSuccess={handlePasswordSetupSuccess}
+        onError={handlePasswordSetupError}
+      />
+    );
+  }
 
   const getStatusIcon = () => {
     switch (status) {

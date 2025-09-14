@@ -198,29 +198,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("Attempting login for:", email);
 
       // Try Supabase Auth first
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.toLowerCase(),
-          password: password,
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase(),
+        password: password,
+      });
 
-        if (error) {
-          console.error("Supabase Auth error:", error.message);
-          // Fall through to fallback method
-        } else if (data.user) {
-          console.log("Supabase Auth successful, loading user data...");
-          await loadUserFromSession(data.user);
-          setIsLoading(false);
-          return true;
-        }
-      } catch (supabaseError) {
-        console.error("Supabase Auth failed:", supabaseError);
-        // Fall through to fallback method
+      if (error) {
+        console.error("Supabase Auth error:", error.message);
+        setIsLoading(false);
+        return false;
       }
 
-      // Fallback: Simple credential check for testing
-      console.log("Using fallback authentication method");
+      if (data.user) {
+        console.log("Supabase Auth successful, loading user data...");
+        await loadUserFromSession(data.user);
+        setIsLoading(false);
+        return true;
+      }
 
+      // Fallback: Admin credential check only
       if (
         email.toLowerCase() === "it@vanguard-group.org" &&
         password === "Vgc@admin2025!"
@@ -236,49 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return true;
       }
 
-      // Check if engineer exists in database (password validation removed for security)
-      console.log("Checking if engineer exists in database...");
-
-      const engineerQuery = supabase
-        .from("engineers")
-        .select("*")
-        .eq("email", email.toLowerCase())
-        .single();
-
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Database query timeout")), 5000)
-      );
-
-      try {
-        const { data: engineer, error: engineerError } = (await Promise.race([
-          engineerQuery,
-          timeoutPromise,
-        ])) as any;
-
-        if (engineer && !engineerError) {
-          console.log("Engineer found in database:", engineer.name);
-          console.log(
-            "Note: Password validation removed for security. Use Supabase Auth for authentication."
-          );
-          setUser({
-            id: engineer.id,
-            name: engineer.name,
-            email: engineer.email,
-            role: "engineer",
-            engineerId: engineer.engineer_id,
-          });
-          setIsLoading(false);
-          return true;
-        } else {
-          console.log("Engineer not found in database");
-          console.error("Engineer lookup error:", engineerError);
-        }
-      } catch (timeoutError) {
-        console.error("Database query timed out:", timeoutError);
-        console.log("Database timeout - login failed");
-      }
-
-      console.log("Login failed - invalid credentials");
+      console.log("Login failed - invalid credentials or password not set");
       setIsLoading(false);
       return false;
     } catch (error) {
