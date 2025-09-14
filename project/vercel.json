@@ -13,7 +13,7 @@
       "src": "/(.*)",
       "dest": "/index.html",
       "headers": {
-        "Content-Security-Policy": "default-src 'self'; img-src 'self' data: https://drive.google.com https://*.googleusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel.app https://*.supabase.co https://api.emailjs.com; font-src 'self' data:;"
+        "Content-Security-Policy": "default-src 'self'; img-src 'self' data: https://drive.google.com https://*.googleusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel.app https://*.supabase.co; font-src 'self' data:;"
       }
     }
   ]
