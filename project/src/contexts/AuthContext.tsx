@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .single();
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Database query timeout")), 5000)
+        setTimeout(() => reject(new Error("Database query timeout")), 15000)
       );
 
       try {

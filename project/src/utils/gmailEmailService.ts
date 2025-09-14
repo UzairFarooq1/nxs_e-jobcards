@@ -32,6 +32,15 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
       
       const healthData = await healthResponse.json();
       console.log(`✅ Backend health check passed:`, healthData);
+      
+      // Also test the specific email endpoint to see if it exists
+      console.log(`🔍 Testing email endpoint availability...`);
+      const emailTestResponse = await fetch(`${API_BASE_URL}/send-jobcard-email`, {
+        method: 'OPTIONS',
+        headers: { 'Accept': 'application/json' }
+      });
+      console.log(`📧 Email endpoint test: ${emailTestResponse.status} ${emailTestResponse.statusText}`);
+      
     } catch (healthError) {
       console.error(`❌ Backend health check failed:`, healthError);
       throw new Error(`Backend not reachable: ${healthError.message}`);
@@ -48,10 +57,53 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
 
     // Send request to backend
     console.log(`📤 Sending email request to: ${API_BASE_URL}/send-jobcard-email`);
-    const response = await fetch(`${API_BASE_URL}/send-jobcard-email`, {
+    console.log(`📤 FormData contents:`, {
+      jobCardData: formData.get('jobCardData') ? 'Present' : 'Missing',
+      htmlContent: formData.get('htmlContent') ? 'Present' : 'Missing',
+      pdf: formData.get('pdf') ? `Present (${formData.get('pdf').size} bytes)` : 'Missing'
+    });
+    
+    // Try the main endpoint first
+    let response = await fetch(`${API_BASE_URL}/send-jobcard-email`, {
       method: 'POST',
       body: formData,
+      headers: {
+        'Accept': 'application/json'
+      }
     });
+    
+    // If 404, try alternative paths
+    if (response.status === 404) {
+      console.log(`❌ Main endpoint failed with 404, trying alternative paths...`);
+      
+      // Try without /api prefix (in case backend is deployed differently)
+      const baseUrl = API_BASE_URL.replace('/api', '');
+      const altUrl = `${baseUrl}/api/send-jobcard-email`;
+      console.log(`🔄 Trying alternative URL: ${altUrl}`);
+      
+      response = await fetch(altUrl, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (response.status === 404) {
+        console.log(`❌ Alternative URL also failed, trying serverless function path...`);
+        // Try serverless function path
+        const serverlessUrl = `${baseUrl}/api/send-jobcard-email.js`;
+        console.log(`🔄 Trying serverless URL: ${serverlessUrl}`);
+        
+        response = await fetch(serverlessUrl, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+      }
+    }
 
     if (!response.ok) {
       console.error(`❌ Email request failed: ${response.status} ${response.statusText}`);
