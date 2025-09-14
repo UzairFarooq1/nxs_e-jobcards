@@ -140,17 +140,27 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
   const addJobCard = async (
     jobCardData: Omit<JobCard, "id" | "createdAt">
   ): Promise<string> => {
-    // Generate sequential job card number starting with NXS-00001
-    const jobCardId = await generateNextJobCardId(jobCards);
-    const newJobCard: JobCard = {
-      ...jobCardData,
-      id: jobCardId,
-      createdAt: new Date().toISOString(),
-      status: "completed" as const,
-    };
-
     try {
-      console.log("Attempting to save job card to Supabase:", newJobCard);
+      console.log("🔄 Starting job card creation process...");
+
+      // Step 1: Generate ID with timeout
+      console.log("🔢 Generating job card ID...");
+      const jobCardId = await Promise.race([
+        generateNextJobCardId(jobCards),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("ID generation timeout")), 10000)
+        ),
+      ]);
+      console.log("✅ Generated job card ID:", jobCardId);
+
+      const newJobCard: JobCard = {
+        ...jobCardData,
+        id: jobCardId,
+        createdAt: new Date().toISOString(),
+        status: "completed" as const,
+      };
+
+      console.log("💾 Preparing to save job card to database...");
 
       // Map camelCase to snake_case for database
       const dbJobCard = {
@@ -172,14 +182,15 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
         facility_stamp_image: newJobCard.facilityStampImage || "",
       };
 
-      console.log("Mapped data for database:", dbJobCard);
+      console.log("🔄 Saving to Supabase database...");
 
-      // Save to Supabase
-      const { data, error } = await supabase
-        .from("job_cards")
-        .insert([dbJobCard])
-        .select()
-        .single();
+      // Step 2: Save to Supabase with timeout
+      const { data, error } = await Promise.race([
+        supabase.from("job_cards").insert([dbJobCard]).select().single(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Database insert timeout")), 15000)
+        ),
+      ]);
 
       if (error) {
         console.error("Error saving job card to database:", error);

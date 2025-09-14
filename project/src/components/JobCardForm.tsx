@@ -26,6 +26,7 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
   const { user } = useAuth();
   const { addJobCard, getAllJobCards } = useJobCard();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStep, setSubmissionStep] = useState("");
   const [facilitySignature, setFacilitySignature] = useState("");
   const [showFacilitySignature, setShowFacilitySignature] = useState(false);
   const [beforeServiceImages, setBeforeServiceImages] = useState<string[]>([]);
@@ -269,6 +270,7 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
     }
 
     setIsSubmitting(true);
+    setSubmissionStep("Preparing job card data...");
     console.log("Starting job card submission...");
 
     try {
@@ -286,47 +288,103 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
 
       console.log("Job card data to submit:", jobCardData);
 
-      const jobCardId = await addJobCard(jobCardData);
+      // Create job card with timeout
+      setSubmissionStep("Creating job card in database...");
+      console.log("🔄 Creating job card in database...");
+      const jobCardId = await Promise.race([
+        addJobCard(jobCardData),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error("Job card creation timeout")),
+            60000
+          )
+        ),
+      ]);
 
-      console.log("Job card created successfully with ID:", jobCardId);
+      console.log("✅ Job card created successfully with ID:", jobCardId);
 
-      // Send email notification to admin
+      // Send email notification to admin with timeout
       try {
-        console.log("Generating PDF for email...");
+        console.log("📧 Starting email notification process...");
+
         const jobCardForEmail = {
           ...jobCardData,
           id: jobCardId,
           createdAt: new Date().toISOString(),
           status: "completed" as const,
         };
-        const pdfBlob = await generateJobCardPDF(jobCardForEmail);
-        console.log("Sending email notification...");
-        const emailSent = await sendJobCardEmail(jobCardForEmail, pdfBlob);
+
+        // Step 1: Generate PDF with timeout
+        setSubmissionStep("Generating PDF report...");
+        console.log("📄 Generating PDF for email...");
+        const pdfBlob = await Promise.race([
+          generateJobCardPDF(jobCardForEmail),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("PDF generation timeout")), 30000)
+          ),
+        ]);
+        console.log("✅ PDF generated successfully");
+
+        // Step 2: Send email with timeout
+        setSubmissionStep("Sending email notification...");
+        console.log("📤 Sending email notification...");
+        const emailSent = await Promise.race([
+          sendJobCardEmail(jobCardForEmail, pdfBlob),
+          new Promise<boolean>((_, reject) =>
+            setTimeout(() => reject(new Error("Email sending timeout")), 30000)
+          ),
+        ]);
 
         if (emailSent) {
-          console.log("Email notification sent successfully");
+          console.log("✅ Email notification sent successfully");
           alert(
             `Job Card ${jobCardId} created successfully! Email notification sent to admin.`
           );
         } else {
-          console.log("Email notification failed, but job card was created");
+          console.log("⚠️ Email notification failed, but job card was created");
           alert(
             `Job Card ${jobCardId} created successfully! (Email notification failed - check console for details)`
           );
         }
       } catch (emailError) {
-        console.error("Error sending email notification:", emailError);
+        console.error("❌ Error in email notification process:", emailError);
+
+        // Show specific error message
+        const errorMessage =
+          emailError instanceof Error ? emailError.message : "Unknown error";
+        console.error("Email error details:", errorMessage);
+
         alert(
-          `Job Card ${jobCardId} created successfully! (Email notification failed - check console for details)`
+          `Job Card ${jobCardId} created successfully! (Email notification failed: ${errorMessage})`
         );
       }
 
       onBack();
     } catch (error) {
-      console.error("Error creating job card:", error);
-      alert("Error creating job card. Please try again.");
+      console.error("❌ Error creating job card:", error);
+
+      // Show specific error message
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      console.error("Job card creation error details:", errorMessage);
+
+      let userMessage = "Error creating job card. Please try again.";
+
+      // Provide more specific error messages
+      if (errorMessage.includes("timeout")) {
+        userMessage =
+          "Job card creation timed out. Please check your internet connection and try again.";
+      } else if (errorMessage.includes("network")) {
+        userMessage =
+          "Network error. Please check your internet connection and try again.";
+      } else if (errorMessage.includes("database")) {
+        userMessage = "Database error. Please try again in a few moments.";
+      }
+
+      alert(userMessage);
     } finally {
       setIsSubmitting(false);
+      setSubmissionStep("");
     }
   };
 
@@ -794,9 +852,10 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>
-                    {isManualUpload
-                      ? "Uploading Job Card..."
-                      : "Creating Job Card..."}
+                    {submissionStep ||
+                      (isManualUpload
+                        ? "Uploading Job Card..."
+                        : "Creating Job Card...")}
                   </span>
                 </>
               ) : (
