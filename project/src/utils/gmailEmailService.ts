@@ -14,36 +14,23 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
     console.log(`🌐 Using API URL: ${API_BASE_URL}`);
     console.log(`📄 PDF size: ${pdfBlob.size} bytes`);
 
-    // First, test if backend is available
+    // Quick health check - don't fail if backend is temporarily down
     console.log(`🔍 Testing backend health at: ${API_BASE_URL}/health`);
     try {
       const healthResponse = await fetch(`${API_BASE_URL}/health`, {
         method: 'GET',
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json' },
+        signal: AbortSignal.timeout(5000) // 5 second timeout
       });
       
-      if (!healthResponse.ok) {
-        console.error(`❌ Backend health check failed: ${healthResponse.status} ${healthResponse.statusText}`);
-        console.error(`❌ Response URL: ${healthResponse.url}`);
-        const errorText = await healthResponse.text();
-        console.error(`❌ Error response: ${errorText.substring(0, 200)}...`);
-        throw new Error(`Backend not available: ${healthResponse.status}`);
+      if (healthResponse.ok) {
+        const healthData = await healthResponse.json();
+        console.log(`✅ Backend health check passed:`, healthData);
+      } else {
+        console.warn(`⚠️ Backend health check returned: ${healthResponse.status} - proceeding anyway`);
       }
-      
-      const healthData = await healthResponse.json();
-      console.log(`✅ Backend health check passed:`, healthData);
-      
-      // Also test the specific email endpoint to see if it exists
-      console.log(`🔍 Testing email endpoint availability...`);
-      const emailTestResponse = await fetch(`${API_BASE_URL}/send-jobcard-email`, {
-        method: 'OPTIONS',
-        headers: { 'Accept': 'application/json' }
-      });
-      console.log(`📧 Email endpoint test: ${emailTestResponse.status} ${emailTestResponse.statusText}`);
-      
     } catch (healthError) {
-      console.error(`❌ Backend health check failed:`, healthError);
-      throw new Error(`Backend not reachable: ${healthError.message}`);
+      console.warn(`⚠️ Backend health check failed:`, healthError.message, '- proceeding anyway');
     }
 
     // Generate beautiful HTML email template
@@ -55,7 +42,7 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
     formData.append('htmlContent', htmlContent);
     formData.append('pdf', pdfBlob, `jobcard-${jobCard.id}.pdf`);
 
-    // Send request to backend
+    // Send request to backend with timeout
     console.log(`📤 Sending email request to: ${API_BASE_URL}/send-jobcard-email`);
     console.log(`📤 FormData contents:`, {
       jobCardData: formData.get('jobCardData') ? 'Present' : 'Missing',
@@ -63,47 +50,14 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
       pdf: formData.get('pdf') ? `Present (${formData.get('pdf').size} bytes)` : 'Missing'
     });
     
-    // Try the main endpoint first
-    let response = await fetch(`${API_BASE_URL}/send-jobcard-email`, {
+    const response = await fetch(`${API_BASE_URL}/send-jobcard-email`, {
       method: 'POST',
       body: formData,
       headers: {
         'Accept': 'application/json'
-      }
+      },
+      signal: AbortSignal.timeout(30000) // 30 second timeout
     });
-    
-    // If 404, try alternative paths
-    if (response.status === 404) {
-      console.log(`❌ Main endpoint failed with 404, trying alternative paths...`);
-      
-      // Try without /api prefix (in case backend is deployed differently)
-      const baseUrl = API_BASE_URL.replace('/api', '');
-      const altUrl = `${baseUrl}/api/send-jobcard-email`;
-      console.log(`🔄 Trying alternative URL: ${altUrl}`);
-      
-      response = await fetch(altUrl, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (response.status === 404) {
-        console.log(`❌ Alternative URL also failed, trying serverless function path...`);
-        // Try serverless function path
-        const serverlessUrl = `${baseUrl}/api/send-jobcard-email.js`;
-        console.log(`🔄 Trying serverless URL: ${serverlessUrl}`);
-        
-        response = await fetch(serverlessUrl, {
-          method: 'POST',
-          body: formData,
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-      }
-    }
 
     if (!response.ok) {
       console.error(`❌ Email request failed: ${response.status} ${response.statusText}`);
@@ -139,24 +93,24 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
 
   } catch (error) {
     console.error('❌ Error sending email via Gmail SMTP:', error);
+    console.log('🔄 Gmail SMTP failed - trying fallback mailto method...');
     
-    // Try fallback email service
-    console.log('🔄 Attempting fallback email service...');
+    // Try fallback mailto method
     try {
       const { sendJobCardEmail: fallbackSendEmail } = await import('./emailService');
       const success = await fallbackSendEmail(jobCard, pdfBlob);
       
       if (success) {
-        console.log('✅ Fallback email service succeeded');
+        console.log('✅ Fallback email method succeeded');
         return true;
       } else {
-        console.log('❌ Fallback email service also failed');
+        console.log('❌ Fallback email method also failed');
+        return false;
       }
     } catch (fallbackError) {
-      console.error('❌ Fallback email service error:', fallbackError);
+      console.error('❌ Fallback email method error:', fallbackError);
+      return false;
     }
-    
-    return false;
   }
 };
 
