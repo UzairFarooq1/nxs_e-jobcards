@@ -27,9 +27,13 @@ function AppContent() {
 
       const pathname = window.location.pathname || "";
       const search = window.location.search || "";
+      const hash = window.location.hash || "";
 
       const result =
-        pathname === "/auth/callback" || search.includes("type=invite");
+        pathname === "/auth/callback" ||
+        search.includes("type=invite") ||
+        hash.includes("access_token") ||
+        hash.includes("type=invite");
       console.log("  isAuthCallback result:", result);
       return result;
     } catch (error) {

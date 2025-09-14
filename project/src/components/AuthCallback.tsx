@@ -14,13 +14,23 @@ export function AuthCallback() {
       try {
         // Check if this is an invite callback
         const searchParams = window.location.search || "";
+        const hashParams = window.location.hash || "";
         console.log("Auth callback - search params:", searchParams);
+        console.log("Auth callback - hash params:", hashParams);
 
         const urlParams = new URLSearchParams(searchParams);
         const type = urlParams.get("type");
-        console.log("Auth callback - type:", type);
 
-        if (type === "invite") {
+        // Also check hash for Supabase auth tokens
+        const hashUrlParams = new URLSearchParams(hashParams.substring(1)); // Remove # from hash
+        const accessToken = hashUrlParams.get("access_token");
+        const tokenType = hashUrlParams.get("type");
+
+        console.log("Auth callback - type:", type);
+        console.log("Auth callback - token type:", tokenType);
+        console.log("Auth callback - has access token:", !!accessToken);
+
+        if (type === "invite" || tokenType === "invite" || accessToken) {
           setMessage("Setting up your account...");
 
           // Get the current session after the invite process
