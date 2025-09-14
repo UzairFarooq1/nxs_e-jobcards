@@ -3,8 +3,22 @@ export const EMAIL_CONFIG = {
   // Admin email address
   ADMIN_EMAIL: import.meta.env.VITE_ADMIN_EMAIL || "it@vanguard-group.org",
   
-  // Primary email method: Gmail SMTP via backend
-  // Fallback: mailto client
+  // Primary email method: EmailJS with SMTP port 465
+  USE_EMAIL_SERVICE: true,
+  
+  // EmailJS configuration for it@vanguard-group.org
+  EMAILJS: {
+    SERVICE_ID: import.meta.env.VITE_EMAILJS_SERVICE_ID || "service_3zya3on",
+    TEMPLATE_ID: import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "template_ur5rvkh", 
+    PUBLIC_KEY: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "JMhuvm_lxCrEhXP_I",
+    // SMTP settings for port 465
+    SMTP_PORT: 465,
+    SMTP_HOST: "smtp.gmail.com",
+    FROM_EMAIL: "it@vanguard-group.org"
+  },
+  
+  // Fallback: Gmail SMTP via backend
+  // Final fallback: mailto client
 };
 
 // Email templates

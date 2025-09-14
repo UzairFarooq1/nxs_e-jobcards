@@ -16,7 +16,7 @@ import { SignatureCanvas } from "./SignatureCanvas";
 import {
   sendJobCardEmail,
   generateJobCardPDF,
-} from "../utils/gmailEmailService";
+} from "../utils/emailService";
 
 interface JobCardFormProps {
   onBack: () => void;

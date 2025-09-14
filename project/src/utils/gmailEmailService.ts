@@ -93,22 +93,22 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
 
   } catch (error) {
     console.error('❌ Error sending email via Gmail SMTP:', error);
-    console.log('🔄 Gmail SMTP failed - trying fallback mailto method...');
+    console.log('🔄 Gmail SMTP failed - trying EmailJS fallback...');
     
-    // Try fallback mailto method
+    // Try EmailJS fallback method
     try {
       const { sendJobCardEmail: fallbackSendEmail } = await import('./emailService');
       const success = await fallbackSendEmail(jobCard, pdfBlob);
       
       if (success) {
-        console.log('✅ Fallback email method succeeded');
+        console.log('✅ EmailJS fallback method succeeded');
         return true;
       } else {
-        console.log('❌ Fallback email method also failed');
+        console.log('❌ EmailJS fallback method also failed');
         return false;
       }
     } catch (fallbackError) {
-      console.error('❌ Fallback email method error:', fallbackError);
+      console.error('❌ EmailJS fallback method error:', fallbackError);
       return false;
     }
   }
