@@ -34,30 +34,31 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
     // Check for existing Supabase session with timeout
     const getSession = async () => {
       console.log("🔄 Checking for existing session...");
-      
+
       // Add timeout to prevent hanging on session check
       const sessionTimeout = setTimeout(() => {
         console.error("⏰ Session check timed out - setting loading to false");
         setIsLoading(false);
       }, 15000);
-      
+
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        
+
         if (session?.user) {
           console.log("📱 Existing session found, loading user data...");
           await loadUserFromSession(session.user);
         } else {
           console.log("🚫 No existing session found");
         }
-        
+
         clearTimeout(sessionTimeout);
         setIsLoading(false);
       } catch (error) {
@@ -88,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (user) {
       console.log("🔄 Initializing inactivity manager for user:", user.name);
-      
+
       // Initialize inactivity manager when user logs in
       const inactivityManager = getInactivityManager();
       inactivityManager.start(() => {
@@ -96,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Logout callback
         logout();
       });
-      
+
       console.log("✅ Inactivity manager started with 5-minute timeout");
 
       return () => {
@@ -109,6 +110,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const loadUserFromSession = async (supabaseUser: any) => {
+    // Prevent multiple simultaneous authentication attempts
+    if (isAuthenticating) {
+      console.log("🔄 Authentication already in progress, skipping...");
+      return;
+    }
+
+    setIsAuthenticating(true);
     try {
       console.log("Loading user from session:", supabaseUser.email);
 
@@ -213,8 +221,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           });
         } else {
           console.warn("Unknown engineer - logging out user");
-          console.log("💡 To add this user to fallback list, add them to knownEngineers array in AuthContext.tsx");
-          
+          console.log(
+            "💡 To add this user to fallback list, add them to knownEngineers array in AuthContext.tsx"
+          );
+
           // Sign out and ensure loading state is cleared
           try {
             await supabase.auth.signOut();
@@ -228,6 +238,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Error loading user from session:", error);
       // Don't get stuck - set user to null on error
       setUser(null);
+    } finally {
+      setIsAuthenticating(false);
     }
   };
 
@@ -265,16 +277,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsLoading(false);
           return true;
         } catch (loadUserError) {
-          console.error("Error loading user data after successful auth:", loadUserError);
-          console.warn("Authentication succeeded but user data loading failed - signing out");
-          
+          console.error(
+            "Error loading user data after successful auth:",
+            loadUserError
+          );
+          console.warn(
+            "Authentication succeeded but user data loading failed - signing out"
+          );
+
           // If user data loading fails, sign out to prevent stuck state
           try {
             await supabase.auth.signOut();
           } catch (signOutError) {
-            console.error("Error signing out after failed user load:", signOutError);
+            console.error(
+              "Error signing out after failed user load:",
+              signOutError
+            );
           }
-          
+
           setUser(null);
           clearTimeout(loginTimeout);
           setIsLoading(false);
@@ -314,38 +334,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       console.log("🔐 Logging out user...");
-      
+
       // Stop and destroy inactivity manager
       const inactivityManager = getInactivityManager();
       inactivityManager.destroy();
       console.log("✅ Inactivity manager destroyed");
-      
+
       // Sign out from Supabase
       await supabase.auth.signOut();
       console.log("✅ Supabase session signed out");
-      
+
       // Clear local state
       setUser(null);
       console.log("✅ User state cleared");
-      
-      // Clear all localStorage data
+
+      // Clear auth-related localStorage data only, preserve job cards cache
+      const jobCardsCache = localStorage.getItem("nxs-jobcards");
       localStorage.clear();
-      console.log("✅ LocalStorage cleared");
-      
+      if (jobCardsCache) {
+        localStorage.setItem("nxs-jobcards", jobCardsCache);
+        console.log("✅ Job cards cache preserved during logout");
+      }
+      console.log("✅ LocalStorage cleared (except job cards)");
+
       // Clear any cached data
       sessionStorage.clear();
       console.log("✅ SessionStorage cleared");
-      
+
       console.log("🎉 Logout completed successfully");
-      
     } catch (error) {
       console.error("❌ Error during logout:", error);
-      
+
       // Force logout even if there's an error
       setUser(null);
+      const jobCardsCache = localStorage.getItem("nxs-jobcards");
       localStorage.clear();
+      if (jobCardsCache) {
+        localStorage.setItem("nxs-jobcards", jobCardsCache);
+      }
       sessionStorage.clear();
-      
+
       // Reload the page to ensure clean state
       window.location.reload();
     }
