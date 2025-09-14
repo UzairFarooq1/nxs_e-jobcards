@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { supabase } from '../config/supabase';
-import { Lock, Eye, EyeOff } from 'lucide-react';
+import React, { useState } from "react";
+import { supabase } from "../config/supabase";
+import { Lock, Eye, EyeOff } from "lucide-react";
 
 interface PasswordSetupProps {
   onSuccess: () => void;
@@ -8,36 +8,37 @@ interface PasswordSetupProps {
 }
 
 export function PasswordSetup({ onSuccess, onError }: PasswordSetupProps) {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validatePassword = (pwd: string) => {
-    const errors: {[key: string]: string} = {};
-    
+    const errors: { [key: string]: string } = {};
+
     if (pwd.length < 8) {
-      errors.length = 'Password must be at least 8 characters long';
+      errors.length = "Password must be at least 8 characters long";
     }
-    
+
     if (!/(?=.*[a-z])/.test(pwd)) {
-      errors.lowercase = 'Password must contain at least one lowercase letter';
+      errors.lowercase = "Password must contain at least one lowercase letter";
     }
-    
+
     if (!/(?=.*[A-Z])/.test(pwd)) {
-      errors.uppercase = 'Password must contain at least one uppercase letter';
+      errors.uppercase = "Password must contain at least one uppercase letter";
     }
-    
+
     if (!/(?=.*\d)/.test(pwd)) {
-      errors.number = 'Password must contain at least one number';
+      errors.number = "Password must contain at least one number";
     }
-    
+
     if (!/(?=.*[@$!%*?&])/.test(pwd)) {
-      errors.special = 'Password must contain at least one special character (@$!%*?&)';
+      errors.special =
+        "Password must contain at least one special character (@$!%*?&)";
     }
-    
+
     return errors;
   };
 
@@ -56,31 +57,30 @@ export function PasswordSetup({ onSuccess, onError }: PasswordSetupProps) {
 
     // Check password confirmation
     if (password !== confirmPassword) {
-      setErrors({ confirm: 'Passwords do not match' });
+      setErrors({ confirm: "Passwords do not match" });
       setIsLoading(false);
       return;
     }
 
     try {
-      console.log('🔐 Setting up password...');
-      
+      console.log("🔐 Setting up password...");
+
       // Update user password
       const { data, error } = await supabase.auth.updateUser({
-        password: password
+        password: password,
       });
 
       if (error) {
-        console.error('❌ Password setup error:', error);
-        onError(error.message || 'Failed to set password');
+        console.error("❌ Password setup error:", error);
+        onError(error.message || "Failed to set password");
         return;
       }
 
-      console.log('✅ Password set successfully:', data);
+      console.log("✅ Password set successfully:", data);
       onSuccess();
-      
     } catch (error: any) {
-      console.error('❌ Password setup failed:', error);
-      onError(error.message || 'An unexpected error occurred');
+      console.error("❌ Password setup failed:", error);
+      onError(error.message || "An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +94,9 @@ export function PasswordSetup({ onSuccess, onError }: PasswordSetupProps) {
             <div className="mx-auto h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
               <Lock className="h-6 w-6 text-blue-600" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Set Your Password</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Set Your Password
+            </h2>
             <p className="mt-2 text-sm text-gray-600">
               Create a secure password for your NXS E-JobCard account
             </p>
@@ -102,14 +104,17 @@ export function PasswordSetup({ onSuccess, onError }: PasswordSetupProps) {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 New Password
               </label>
               <div className="mt-1 relative">
                 <input
                   id="password"
                   name="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -128,20 +133,27 @@ export function PasswordSetup({ onSuccess, onError }: PasswordSetupProps) {
                   )}
                 </button>
               </div>
-              {Object.entries(errors).filter(([key]) => key !== 'confirm').map(([key, error]) => (
-                <p key={key} className="mt-1 text-xs text-red-600">{error}</p>
-              ))}
+              {Object.entries(errors)
+                .filter(([key]) => key !== "confirm")
+                .map(([key, error]) => (
+                  <p key={key} className="mt-1 text-xs text-red-600">
+                    {error}
+                  </p>
+                ))}
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Confirm Password
               </label>
               <div className="mt-1 relative">
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -166,21 +178,37 @@ export function PasswordSetup({ onSuccess, onError }: PasswordSetupProps) {
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-blue-800 mb-2">Password Requirements:</h4>
+              <h4 className="text-sm font-medium text-blue-800 mb-2">
+                Password Requirements:
+              </h4>
               <ul className="text-xs text-blue-700 space-y-1">
-                <li className={password.length >= 8 ? 'text-green-600' : ''}>
+                <li className={password.length >= 8 ? "text-green-600" : ""}>
                   ✓ At least 8 characters long
                 </li>
-                <li className={/(?=.*[a-z])/.test(password) ? 'text-green-600' : ''}>
+                <li
+                  className={
+                    /(?=.*[a-z])/.test(password) ? "text-green-600" : ""
+                  }
+                >
                   ✓ One lowercase letter
                 </li>
-                <li className={/(?=.*[A-Z])/.test(password) ? 'text-green-600' : ''}>
-                  ✓ One uppercase letter  
+                <li
+                  className={
+                    /(?=.*[A-Z])/.test(password) ? "text-green-600" : ""
+                  }
+                >
+                  ✓ One uppercase letter
                 </li>
-                <li className={/(?=.*\d)/.test(password) ? 'text-green-600' : ''}>
+                <li
+                  className={/(?=.*\d)/.test(password) ? "text-green-600" : ""}
+                >
                   ✓ One number
                 </li>
-                <li className={/(?=.*[@$!%*?&])/.test(password) ? 'text-green-600' : ''}>
+                <li
+                  className={
+                    /(?=.*[@$!%*?&])/.test(password) ? "text-green-600" : ""
+                  }
+                >
                   ✓ One special character (@$!%*?&)
                 </li>
               </ul>
@@ -194,14 +222,30 @@ export function PasswordSetup({ onSuccess, onError }: PasswordSetupProps) {
               >
                 {isLoading ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Setting Password...
                   </>
                 ) : (
-                  'Set Password'
+                  "Set Password"
                 )}
               </button>
             </div>
@@ -209,7 +253,8 @@ export function PasswordSetup({ onSuccess, onError }: PasswordSetupProps) {
 
           <div className="mt-6 text-center">
             <p className="text-xs text-gray-500">
-              After setting your password, you'll be able to log in to the system.
+              After setting your password, you'll be able to log in to the
+              system.
             </p>
           </div>
         </div>

@@ -5,9 +5,9 @@ import { PasswordSetup } from "./PasswordSetup";
 
 export function AuthCallback() {
   const { user } = useAuth();
-  const [status, setStatus] = useState<"loading" | "setup" | "success" | "error">(
-    "loading"
-  );
+  const [status, setStatus] = useState<
+    "loading" | "setup" | "success" | "error"
+  >("loading");
   const [message, setMessage] = useState("Processing authentication...");
   const [needsPasswordSetup, setNeedsPasswordSetup] = useState(false);
 
@@ -89,7 +89,7 @@ export function AuthCallback() {
     console.log("✅ Password setup completed successfully");
     setStatus("success");
     setMessage("Password set successfully! Redirecting to login...");
-    
+
     // Wait a moment then redirect to login
     setTimeout(() => {
       window.location.href = "/";
@@ -105,7 +105,7 @@ export function AuthCallback() {
   // Show password setup form if needed
   if (needsPasswordSetup && status === "setup") {
     return (
-      <PasswordSetup 
+      <PasswordSetup
         onSuccess={handlePasswordSetupSuccess}
         onError={handlePasswordSetupError}
       />
