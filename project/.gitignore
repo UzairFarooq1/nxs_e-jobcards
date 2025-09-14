@@ -94,3 +94,4 @@ temp/
 # Local server files
 server/config.env
 server/logs/
+.vercel
