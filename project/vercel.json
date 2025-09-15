@@ -2,6 +2,11 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "app/api/**/*.js": {
+      "maxDuration": 30
+    }
+  },
   "routes": [
     {
       "src": "/assets/(.*)",
@@ -13,7 +18,10 @@
       "src": "/(.*)",
       "dest": "/index.html",
       "headers": {
-        "Content-Security-Policy": "default-src 'self'; img-src 'self' data: https://drive.google.com https://*.googleusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel.app https://*.supabase.co https://api.emailjs.com https://*.emailjs.com; font-src 'self' data:;"
+        "Content-Security-Policy": "default-src 'self'; img-src 'self' data: https://drive.google.com https://*.googleusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.vercel.app https://*.supabase.co https://api.emailjs.com https://*.emailjs.com https://emailjs.com https://smtp.gmail.com https://*.gmail.com https://*.googleapis.com https://*.google.com; font-src 'self' data:;",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
       }
     }
   ]
