@@ -3,8 +3,12 @@ export const EMAIL_CONFIG = {
   // Admin email address
   ADMIN_EMAIL: import.meta.env.VITE_ADMIN_EMAIL || "it@vanguard-group.org",
   
-  // Primary email method: EmailJS with SMTP port 465
-  USE_EMAIL_SERVICE: true,
+  // Primary email method: Backend SMTP service (EmailJS blocked)
+  USE_EMAIL_SERVICE: false,
+  USE_BACKEND_EMAIL: true,
+  
+  // Backend API configuration
+  BACKEND_API_URL: import.meta.env.VITE_API_URL || "https://nxs-e-jobcards-backend.vercel.app",
   
   // EmailJS configuration for it@vanguard-group.org
   EMAILJS: {

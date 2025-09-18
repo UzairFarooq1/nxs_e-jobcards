@@ -8,19 +8,21 @@ import { supabase } from "../config/supabase";
  */
 export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise<boolean> => {
   try {
-    console.log("📧 Sending job card email via EmailJS for:", jobCard.id);
-    console.log("📧 From:", EMAIL_CONFIG.EMAILJS.FROM_EMAIL);
+    console.log("📧 Sending job card email for:", jobCard.id);
     console.log("📧 To Admin:", EMAIL_CONFIG.ADMIN_EMAIL);
 
     // Get engineer's email from database
     const engineerEmail = await getEngineerEmail(jobCard.engineerId);
     console.log("📧 To Engineer:", engineerEmail);
 
-    if (EMAIL_CONFIG.USE_EMAIL_SERVICE) {
-      // Method 1: Using EmailJS with SMTP port 465 - send to both admin and engineer
+    if (EMAIL_CONFIG.USE_BACKEND_EMAIL) {
+      // Method 1: Using backend Gmail SMTP - send to both admin and engineer
+      return await sendViaBackendService(jobCard, pdfBlob, engineerEmail);
+    } else if (EMAIL_CONFIG.USE_EMAIL_SERVICE) {
+      // Method 2: Using EmailJS (currently blocked)
       return await sendViaEmailService(jobCard, pdfBlob, engineerEmail);
     } else {
-      // Method 2: Using browser's mailto (for development)
+      // Method 3: Using browser's mailto (for development)
       return await sendViaMailto(jobCard, pdfBlob, engineerEmail);
     }
   } catch (error) {
@@ -49,6 +51,59 @@ const getEngineerEmail = async (engineerId: string): Promise<string | null> => {
   } catch (error) {
     console.error("Error fetching engineer email:", error);
     return null;
+  }
+};
+
+/**
+ * Send email using backend Gmail SMTP service
+ */
+const sendViaBackendService = async (jobCard: JobCard, pdfBlob: Blob, engineerEmail: string | null): Promise<boolean> => {
+  try {
+    console.log("📧 Sending email via backend Gmail SMTP...");
+    console.log("📧 Backend URL:", EMAIL_CONFIG.BACKEND_API_URL);
+    console.log("📧 PDF size:", pdfBlob.size, "bytes");
+
+    // Convert PDF blob to base64 for backend
+    const base64Pdf = await blobToBase64(pdfBlob);
+    
+    // Prepare job card data for backend
+    const jobCardData = {
+      id: jobCard.id,
+      hospitalName: jobCard.hospitalName,
+      facilitySignature: jobCard.facilitySignature,
+      machineType: jobCard.machineType,
+      machineModel: jobCard.machineModel,
+      serialNumber: jobCard.serialNumber,
+      problemReported: jobCard.problemReported,
+      servicePerformed: jobCard.servicePerformed,
+      engineerName: jobCard.engineerName,
+      engineerId: jobCard.engineerId,
+      dateTime: jobCard.dateTime,
+      engineerEmail: engineerEmail
+    };
+
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('jobCardData', JSON.stringify(jobCardData));
+    formData.append('pdf', pdfBlob, `jobcard-${jobCard.id}.pdf`);
+
+    // Send to backend API
+    const response = await fetch(`${EMAIL_CONFIG.BACKEND_API_URL}/api/send-jobcard-email`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Backend email service failed: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log("✅ Email sent successfully via backend:", result);
+    return true;
+  } catch (error) {
+    console.error("❌ Error sending email via backend:", error);
+    console.log("🔄 Falling back to mailto method...");
+    return await sendViaMailto(jobCard, pdfBlob, engineerEmail);
   }
 };
 
