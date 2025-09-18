@@ -51,10 +51,34 @@ export default async function handler(req, res) {
     const jobCard = JSON.parse(jobCardData);
     const transporter = createTransporter();
 
+    // Get engineer's email from database
+    let engineerEmail = null;
+    try {
+      const { createClient } = require("@supabase/supabase-js");
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      );
+
+      const { data: engineerData, error: engineerError } = await supabase
+        .from("engineers")
+        .select("email")
+        .eq("engineer_id", jobCard.engineerId)
+        .single();
+
+      if (!engineerError && engineerData) {
+        engineerEmail = engineerData.email;
+        console.log("📧 Engineer email found:", engineerEmail);
+      }
+    } catch (error) {
+      console.error("Error fetching engineer email:", error);
+    }
+
     // Email content
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: process.env.ADMIN_EMAIL || "it@vanguard-group.org",
+      cc: engineerEmail || undefined, // CC engineer if email found
       subject: `New Job Card: ${jobCard.id} - ${jobCard.hospitalName}`,
       html: `
         <h2>New Job Card Created</h2>

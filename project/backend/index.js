@@ -132,10 +132,28 @@ app.post("/api/send-jobcard-email", upload.single("pdf"), async (req, res) => {
       <p><em>Job card PDF is attached to this email.</em></p>
     `;
 
+    // Get engineer's email from database
+    let engineerEmail = null;
+    try {
+      const { data: engineerData, error: engineerError } = await supabaseAdmin
+        .from("engineers")
+        .select("email")
+        .eq("engineer_id", jobCard.engineer_id)
+        .single();
+
+      if (!engineerError && engineerData) {
+        engineerEmail = engineerData.email;
+        console.log("📧 Engineer email found:", engineerEmail);
+      }
+    } catch (error) {
+      console.error("Error fetching engineer email:", error);
+    }
+
     // Email content
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: process.env.ADMIN_EMAIL || "it@vanguard-group.org",
+      cc: engineerEmail || undefined, // CC engineer if email found
       subject: `🔧 New Job Card: ${jobCard.id} - ${jobCard.hospitalName}`,
       html: emailHTML,
       attachments: [

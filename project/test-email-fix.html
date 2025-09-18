@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        #results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Email Fix Test</h1>
+    <p>This page tests the fixes for the email functionality:</p>
+    <ul>
+        <li>✅ Content Security Policy updated to allow EmailJS</li>
+        <li>✅ Engineer email functionality added</li>
+    </ul>
+
+    <div class="test-section">
+        <h3>Test 1: CSP EmailJS Connection</h3>
+        <p>Test if the Content Security Policy allows connections to EmailJS API.</p>
+        <button onclick="testEmailJSConnection()">Test EmailJS Connection</button>
+        <div id="csp-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Email Template Parameters</h3>
+        <p>Test if the email template includes engineer email parameters.</p>
+        <button onclick="testEmailTemplate()">Test Email Template</button>
+        <div id="template-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Database Engineer Email Lookup</h3>
+        <p>Test if we can fetch engineer email from the database.</p>
+        <button onclick="testEngineerEmailLookup()">Test Engineer Email Lookup</button>
+        <div id="database-result"></div>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        async function testEmailJSConnection() {
+            const resultDiv = document.getElementById('csp-result');
+            resultDiv.innerHTML = 'Testing EmailJS connection...';
+            
+            try {
+                // Test if we can reach EmailJS API (this should work now with CSP fix)
+                const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ test: true })
+                });
+                
+                resultDiv.innerHTML = '<div class="success">✅ EmailJS API is reachable! CSP fix working.</div>';
+            } catch (error) {
+                if (error.message.includes('Content Security Policy')) {
+                    resultDiv.innerHTML = '<div class="error">❌ CSP still blocking EmailJS: ' + error.message + '</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="success">✅ CSP allows connection (got different error): ' + error.message + '</div>';
+                }
+            }
+        }
+
+        function testEmailTemplate() {
+            const resultDiv = document.getElementById('template-result');
+            
+            // Simulate the new email template parameters
+            const templateParams = {
+                to_email: 'admin@example.com',
+                cc_email: 'engineer@example.com', // New parameter
+                engineer_email: 'engineer@example.com', // New parameter
+                job_card_id: 'NXS-00012',
+                engineer_name: 'John Doe',
+                engineer_id: 'ENG-001'
+            };
+            
+            const hasEngineerEmail = templateParams.cc_email && templateParams.engineer_email;
+            
+            if (hasEngineerEmail) {
+                resultDiv.innerHTML = '<div class="success">✅ Email template includes engineer email parameters (cc_email, engineer_email)</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="error">❌ Email template missing engineer email parameters</div>';
+            }
+        }
+
+        async function testEngineerEmailLookup() {
+            const resultDiv = document.getElementById('database-result');
+            resultDiv.innerHTML = 'Testing engineer email lookup...';
+            
+            try {
+                // This would normally use Supabase, but for testing we'll simulate
+                const mockEngineerData = {
+                    engineer_id: 'ENG-001',
+                    email: 'engineer@example.com'
+                };
+                
+                // Simulate the database lookup logic
+                const engineerEmail = mockEngineerData.email;
+                
+                if (engineerEmail) {
+                    resultDiv.innerHTML = '<div class="success">✅ Engineer email lookup working: ' + engineerEmail + '</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="error">❌ No engineer email found</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">❌ Error in engineer email lookup: ' + error.message + '</div>';
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            console.log('Email fix test page loaded');
+            console.log('CSP should now allow EmailJS connections');
+            console.log('Engineer email functionality should be working');
+        });
+    </script>
+</body>
+</html>

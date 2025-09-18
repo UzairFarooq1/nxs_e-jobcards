@@ -1,22 +1,27 @@
 import { JobCard } from "../contexts/JobCardContext";
 import { EMAIL_CONFIG, EMAIL_TEMPLATES } from "../config/email";
+import { supabase } from "../config/supabase";
 
 /**
  * Primary email service using EmailJS with SMTP port 465
- * Sends emails through it@vanguard-group.org
+ * Sends emails through it@vanguard-group.org to both admin and engineer
  */
 export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise<boolean> => {
   try {
     console.log("📧 Sending job card email via EmailJS for:", jobCard.id);
     console.log("📧 From:", EMAIL_CONFIG.EMAILJS.FROM_EMAIL);
-    console.log("📧 To:", EMAIL_CONFIG.ADMIN_EMAIL);
+    console.log("📧 To Admin:", EMAIL_CONFIG.ADMIN_EMAIL);
+
+    // Get engineer's email from database
+    const engineerEmail = await getEngineerEmail(jobCard.engineerId);
+    console.log("📧 To Engineer:", engineerEmail);
 
     if (EMAIL_CONFIG.USE_EMAIL_SERVICE) {
-      // Method 1: Using EmailJS with SMTP port 465
-      return await sendViaEmailService(jobCard, pdfBlob);
+      // Method 1: Using EmailJS with SMTP port 465 - send to both admin and engineer
+      return await sendViaEmailService(jobCard, pdfBlob, engineerEmail);
     } else {
       // Method 2: Using browser's mailto (for development)
-      return await sendViaMailto(jobCard, pdfBlob);
+      return await sendViaMailto(jobCard, pdfBlob, engineerEmail);
     }
   } catch (error) {
     console.error("❌ Error sending job card email:", error);
@@ -24,11 +29,33 @@ export const sendJobCardEmail = async (jobCard: JobCard, pdfBlob: Blob): Promise
   }
 };
 
+/**
+ * Get engineer's email from database using engineer ID
+ */
+const getEngineerEmail = async (engineerId: string): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("engineers")
+      .select("email")
+      .eq("engineer_id", engineerId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching engineer email:", error);
+      return null;
+    }
+
+    return data?.email || null;
+  } catch (error) {
+    console.error("Error fetching engineer email:", error);
+    return null;
+  }
+};
 
 /**
  * Send email using EmailJS with SMTP port 465
  */
-const sendViaEmailService = async (jobCard: JobCard, pdfBlob: Blob): Promise<boolean> => {
+const sendViaEmailService = async (jobCard: JobCard, pdfBlob: Blob, engineerEmail: string | null): Promise<boolean> => {
   try {
     // Dynamically import EmailJS
     const emailjs = await import('@emailjs/browser');
@@ -42,6 +69,7 @@ const sendViaEmailService = async (jobCard: JobCard, pdfBlob: Blob): Promise<boo
     // Prepare template parameters for EmailJS
     const templateParams = {
       to_email: EMAIL_CONFIG.ADMIN_EMAIL, // Send TO admin's email
+      cc_email: engineerEmail || '', // CC engineer's email if available
       from_name: "NXS E-JobCard System", // Sender name
       from_email: EMAIL_CONFIG.EMAILJS.FROM_EMAIL, // From it@vanguard-group.org
       reply_to: EMAIL_CONFIG.EMAILJS.FROM_EMAIL, // Reply to it@vanguard-group.org
@@ -51,6 +79,7 @@ const sendViaEmailService = async (jobCard: JobCard, pdfBlob: Blob): Promise<boo
       hospital_name: jobCard.hospitalName,
       engineer_name: jobCard.engineerName,
       engineer_id: jobCard.engineerId,
+      engineer_email: engineerEmail || 'Not available',
       machine_type: jobCard.machineType,
       machine_model: jobCard.machineModel,
       serial_number: jobCard.serialNumber,
@@ -88,24 +117,30 @@ const sendViaEmailService = async (jobCard: JobCard, pdfBlob: Blob): Promise<boo
   } catch (error) {
     console.error("❌ Error sending email via EmailJS:", error);
     console.log("🔄 Falling back to mailto method...");
-    return await sendViaMailto(jobCard, pdfBlob);
+    return await sendViaMailto(jobCard, pdfBlob, engineerEmail);
   }
 };
 
 /**
  * Send email using browser's mailto (development fallback)
  */
-const sendViaMailto = async (jobCard: JobCard, pdfBlob: Blob): Promise<boolean> => {
+const sendViaMailto = async (jobCard: JobCard, pdfBlob: Blob, engineerEmail: string | null): Promise<boolean> => {
   try {
     const subject = EMAIL_TEMPLATES.JOB_CARD_NOTIFICATION.subject(jobCard.id, jobCard.hospitalName);
     const body = EMAIL_TEMPLATES.JOB_CARD_NOTIFICATION.body(jobCard);
 
-    const mailtoUrl = `mailto:${EMAIL_CONFIG.ADMIN_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    // Include both admin and engineer emails
+    const recipients = engineerEmail 
+      ? `${EMAIL_CONFIG.ADMIN_EMAIL},${engineerEmail}`
+      : EMAIL_CONFIG.ADMIN_EMAIL;
+
+    const mailtoUrl = `mailto:${recipients}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     
     // Open email client
     window.open(mailtoUrl, '_blank');
     
     console.log("Email client opened with job card details");
+    console.log("Recipients:", recipients);
     return true;
   } catch (error) {
     console.error("Error opening email client:", error);
