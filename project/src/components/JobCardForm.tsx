@@ -13,10 +13,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { useJobCard } from "../contexts/JobCardContext";
 import { SignatureCanvas } from "./SignatureCanvas";
-import {
-  sendJobCardEmail,
-  generateJobCardPDF,
-} from "../utils/emailService";
+import { sendJobCardEmail, generateJobCardPDF } from "../utils/emailService";
 
 interface JobCardFormProps {
   onBack: () => void;
@@ -28,7 +25,9 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStep, setSubmissionStep] = useState("");
   const [facilitySignature, setFacilitySignature] = useState("");
+  const [engineerSignature, setEngineerSignature] = useState("");
   const [showFacilitySignature, setShowFacilitySignature] = useState(false);
+  const [showEngineerSignature, setShowEngineerSignature] = useState(false);
   const [beforeServiceImages, setBeforeServiceImages] = useState<string[]>([]);
   const [afterServiceImages, setAfterServiceImages] = useState<string[]>([]);
   const [facilityStampImage, setFacilityStampImage] = useState<string>("");
@@ -277,6 +276,7 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
       const jobCardData = {
         ...formData,
         facilitySignature,
+        engineerSignature,
         engineerName: user?.name || "",
         engineerId: user?.engineerId || "",
         dateTime: formData.dateTime,
@@ -792,15 +792,20 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
                 </div>
               </section>
 
-              {/* Digital Signature */}
+              {/* Digital Signatures */}
               <section>
                 <div className="flex items-center space-x-2 mb-4">
                   <Signature className="w-5 h-5 text-blue-600" />
                   <h2 className="text-lg font-semibold text-gray-900">
-                    Facility Representative Signature
+                    Digital Signatures
                   </h2>
                 </div>
-                <div className="space-y-4">
+
+                {/* Facility Representative Signature */}
+                <div className="space-y-4 mb-6">
+                  <h3 className="text-md font-medium text-gray-700">
+                    Facility Representative Signature
+                  </h3>
                   <div className="flex items-center space-x-4">
                     <button
                       type="button"
@@ -808,11 +813,11 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
                       className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
                     >
                       <Signature className="w-4 h-4" />
-                      <span>Capture Signature</span>
+                      <span>Capture Facility Signature</span>
                     </button>
                     {facilitySignature && (
                       <span className="text-sm text-green-600 flex items-center">
-                        ✓ Signature captured
+                        ✓ Facility signature captured
                       </span>
                     )}
                   </div>
@@ -820,7 +825,38 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
                     <div className="border border-gray-200 rounded-lg p-4">
                       <img
                         src={facilitySignature}
-                        alt="Signature"
+                        alt="Facility Signature"
+                        className="max-w-xs h-20 border border-gray-200 rounded"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Engineer Signature */}
+                <div className="space-y-4">
+                  <h3 className="text-md font-medium text-gray-700">
+                    Engineer Signature
+                  </h3>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowEngineerSignature(true)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                    >
+                      <Signature className="w-4 h-4" />
+                      <span>Capture Engineer Signature</span>
+                    </button>
+                    {engineerSignature && (
+                      <span className="text-sm text-green-600 flex items-center">
+                        ✓ Engineer signature captured
+                      </span>
+                    )}
+                  </div>
+                  {engineerSignature && (
+                    <div className="border border-gray-200 rounded-lg p-4">
+                      <img
+                        src={engineerSignature}
+                        alt="Engineer Signature"
                         className="max-w-xs h-20 border border-gray-200 rounded"
                       />
                     </div>
@@ -838,6 +874,7 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
                 isSubmitting ||
                 (!isManualUpload &&
                   (!facilitySignature ||
+                    !engineerSignature ||
                     beforeServiceImages.length === 0 ||
                     afterServiceImages.length === 0 ||
                     !facilityStampImage))
@@ -871,18 +908,33 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
         </form>
       </div>
 
-      {/* Signature Modal */}
+      {/* Facility Signature Modal */}
       {showFacilitySignature && (
         <SignatureCanvas
           onSave={(signature) => {
             console.log(
-              "Signature received in JobCardForm:",
+              "Facility signature received in JobCardForm:",
               signature ? "Yes" : "No"
             );
-            console.log("Signature length:", signature?.length || 0);
+            console.log("Facility signature length:", signature?.length || 0);
             setFacilitySignature(signature);
           }}
           onClose={() => setShowFacilitySignature(false)}
+        />
+      )}
+
+      {/* Engineer Signature Modal */}
+      {showEngineerSignature && (
+        <SignatureCanvas
+          onSave={(signature) => {
+            console.log(
+              "Engineer signature received in JobCardForm:",
+              signature ? "Yes" : "No"
+            );
+            console.log("Engineer signature length:", signature?.length || 0);
+            setEngineerSignature(signature);
+          }}
+          onClose={() => setShowEngineerSignature(false)}
         />
       )}
     </div>

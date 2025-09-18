@@ -71,6 +71,7 @@ const sendViaBackendService = async (jobCard: JobCard, pdfBlob: Blob, engineerEm
       id: jobCard.id,
       hospitalName: jobCard.hospitalName,
       facilitySignature: jobCard.facilitySignature,
+      engineerSignature: jobCard.engineerSignature,
       machineType: jobCard.machineType,
       machineModel: jobCard.machineModel,
       serialNumber: jobCard.serialNumber,
@@ -79,7 +80,10 @@ const sendViaBackendService = async (jobCard: JobCard, pdfBlob: Blob, engineerEm
       engineerName: jobCard.engineerName,
       engineerId: jobCard.engineerId,
       dateTime: jobCard.dateTime,
-      engineerEmail: engineerEmail
+      engineerEmail: engineerEmail,
+      beforeServiceImages: jobCard.beforeServiceImages || [],
+      afterServiceImages: jobCard.afterServiceImages || [],
+      facilityStampImage: jobCard.facilityStampImage || ""
     };
 
     // Create FormData for file upload

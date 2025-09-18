@@ -319,13 +319,19 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
       <div class="signature-section">
         <div class="signature-box">
           <h4>Engineer Signature</h4>
-          <div class="signature-line"></div>
-          <p>${jobCard.engineerName}</p>
+          ${jobCard.engineerSignature ? 
+            `<img src="${jobCard.engineerSignature}" alt="Engineer Signature" style="max-width: 100%; max-height: 80px; border: 1px solid #ddd; border-radius: 4px;" />` :
+            '<div class="signature-line"></div>'
+          }
+          <p>${jobCard.engineerName} (${jobCard.engineerId})</p>
         </div>
         <div class="signature-box">
-          <h4>Facility Representative</h4>
-          <div class="signature-line"></div>
-          <p>Authorized Signature</p>
+          <h4>Facility Representative Signature</h4>
+          ${jobCard.facilitySignature ? 
+            `<img src="${jobCard.facilitySignature}" alt="Facility Signature" style="max-width: 100%; max-height: 80px; border: 1px solid #ddd; border-radius: 4px;" />` :
+            '<div class="signature-line"></div>'
+          }
+          <p>Authorized Facility Representative</p>
         </div>
       </div>
 

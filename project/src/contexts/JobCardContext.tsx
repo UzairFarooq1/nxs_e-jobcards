@@ -6,6 +6,7 @@ export interface JobCard {
   id: string;
   hospitalName: string;
   facilitySignature: string;
+  engineerSignature?: string;
   machineType: string;
   machineModel: string;
   serialNumber: string;
@@ -91,6 +92,7 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
           id: item.id,
           hospitalName: item.hospital_name,
           facilitySignature: item.facility_signature,
+          engineerSignature: item.engineer_signature || "",
           machineType: item.machine_type,
           machineModel: item.machine_model,
           serialNumber: item.serial_number,
@@ -140,12 +142,16 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
   const addJobCard = async (
     jobCardData: Omit<JobCard, "id" | "createdAt">
   ): Promise<string> => {
+    // Generate ID first (outside try block so it's available in catch)
+    let jobCardId: string;
+    let newJobCard: JobCard | undefined;
+
     try {
       console.log("🔄 Starting job card creation process...");
 
       // Step 1: Generate ID with timeout
       console.log("🔢 Generating job card ID...");
-      const jobCardId = await Promise.race([
+      jobCardId = await Promise.race([
         generateNextJobCardId(jobCards),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("ID generation timeout")), 10000)
@@ -153,7 +159,7 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
       ]);
       console.log("✅ Generated job card ID:", jobCardId);
 
-      const newJobCard: JobCard = {
+      newJobCard = {
         ...jobCardData,
         id: jobCardId,
         createdAt: new Date().toISOString(),
@@ -167,6 +173,7 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
         id: newJobCard.id,
         hospital_name: newJobCard.hospitalName,
         facility_signature: newJobCard.facilitySignature,
+        engineer_signature: newJobCard.engineerSignature || "",
         machine_type: newJobCard.machineType,
         machine_model: newJobCard.machineModel,
         serial_number: newJobCard.serialNumber,
@@ -209,6 +216,7 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
         id: data.id,
         hospitalName: data.hospital_name,
         facilitySignature: data.facility_signature,
+        engineerSignature: data.engineer_signature || "",
         machineType: data.machine_type,
         machineModel: data.machine_model,
         serialNumber: data.serial_number,
@@ -230,6 +238,18 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error("Error saving job card:", error);
       console.log("Falling back to localStorage due to error");
+
+      // If newJobCard is not defined, create it now
+      if (!newJobCard) {
+        jobCardId = await generateNextJobCardId(jobCards);
+        newJobCard = {
+          ...jobCardData,
+          id: jobCardId,
+          createdAt: new Date().toISOString(),
+          status: "completed" as const,
+        };
+      }
+
       // Fallback to localStorage
       const updatedJobCards = [...jobCards, newJobCard];
       setJobCards(updatedJobCards);
