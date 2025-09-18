@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useJobCard } from "../contexts/JobCardContext";
 import { useAuth } from "../contexts/AuthContext";
-import { generateJobCardPDF } from "../utils/pdfGenerator";
+import { generateJobCardPDF } from "../utils/emailService";
 
 export function AdminDashboard() {
   const { getAllJobCards, loadJobCardsIfAuthenticated } = useJobCard();
@@ -87,14 +87,40 @@ export function AdminDashboard() {
     return matchesSearch;
   });
 
-  const handleDownload = (jobCard: any) => {
-    generateJobCardPDF(jobCard);
+  const handleDownload = async (jobCard: any) => {
+    try {
+      const pdfBlob = await generateJobCardPDF(jobCard);
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `jobcard-${jobCard.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    }
   };
 
-  const handleBulkDownload = () => {
-    filteredJobCards.forEach((card) => {
-      setTimeout(() => generateJobCardPDF(card), 100);
-    });
+  const handleBulkDownload = async () => {
+    for (const card of filteredJobCards) {
+      try {
+        const pdfBlob = await generateJobCardPDF(card);
+        const url = URL.createObjectURL(pdfBlob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `jobcard-${card.id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        // Small delay between downloads
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error("Error downloading PDF for card", card.id, ":", error);
+      }
+    }
   };
 
   const handleAddEngineer = async (e: React.FormEvent) => {

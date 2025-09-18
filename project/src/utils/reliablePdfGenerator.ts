@@ -261,6 +261,84 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
           margin: 20px 0 10px 0;
           height: 40px;
         }
+        
+        .photos-section {
+          margin: 20px 0;
+          page-break-inside: avoid;
+        }
+        
+        .photos-section h3 {
+          color: #2563eb;
+          border-bottom: 2px solid #2563eb;
+          padding-bottom: 10px;
+          margin-bottom: 15px;
+        }
+        
+        .photos-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 15px;
+          margin-top: 15px;
+        }
+        
+        .photo-item {
+          text-align: center;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          padding: 10px;
+          background: #f9fafb;
+        }
+        
+        .service-photo {
+          max-width: 100%;
+          max-height: 150px;
+          object-fit: cover;
+          border-radius: 4px;
+          border: 1px solid #d1d5db;
+        }
+        
+        .photo-caption {
+          margin-top: 8px;
+          font-size: 12px;
+          color: #6b7280;
+          font-weight: 500;
+        }
+        
+        .stamp-section {
+          margin: 20px 0;
+          page-break-inside: avoid;
+        }
+        
+        .stamp-section h3 {
+          color: #7c3aed;
+          border-bottom: 2px solid #7c3aed;
+          padding-bottom: 10px;
+          margin-bottom: 15px;
+        }
+        
+        .stamp-container {
+          text-align: center;
+          border: 2px dashed #d1d5db;
+          border-radius: 8px;
+          padding: 20px;
+          background: #f9fafb;
+        }
+        
+        .facility-stamp {
+          max-width: 200px;
+          max-height: 100px;
+          object-fit: contain;
+          border: 1px solid #d1d5db;
+          border-radius: 4px;
+          background: white;
+        }
+        
+        .stamp-caption {
+          margin-top: 10px;
+          font-size: 14px;
+          color: #6b7280;
+          font-weight: 500;
+        }
       </style>
     </head>
     <body>
@@ -315,6 +393,44 @@ function generatePDFHTMLContent(jobCard: JobCard): string {
         <h3>Service Performed</h3>
         <p>${jobCard.servicePerformed}</p>
       </div>
+
+      ${jobCard.beforeServiceImages && jobCard.beforeServiceImages.length > 0 ? `
+        <div class="photos-section">
+          <h3>Before Service Photos</h3>
+          <div class="photos-grid">
+            ${jobCard.beforeServiceImages.map((img, index) => 
+              `<div class="photo-item">
+                <img src="${img}" alt="Before Service Photo ${index + 1}" class="service-photo" />
+                <p class="photo-caption">Before Service Photo ${index + 1}</p>
+              </div>`
+            ).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      ${jobCard.afterServiceImages && jobCard.afterServiceImages.length > 0 ? `
+        <div class="photos-section">
+          <h3>After Service Photos</h3>
+          <div class="photos-grid">
+            ${jobCard.afterServiceImages.map((img, index) => 
+              `<div class="photo-item">
+                <img src="${img}" alt="After Service Photo ${index + 1}" class="service-photo" />
+                <p class="photo-caption">After Service Photo ${index + 1}</p>
+              </div>`
+            ).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      ${jobCard.facilityStampImage ? `
+        <div class="stamp-section">
+          <h3>Facility Stamp</h3>
+          <div class="stamp-container">
+            <img src="${jobCard.facilityStampImage}" alt="Facility Stamp" class="facility-stamp" />
+            <p class="stamp-caption">Official Facility Stamp</p>
+          </div>
+        </div>
+      ` : ''}
 
       <div class="signature-section">
         <div class="signature-box">

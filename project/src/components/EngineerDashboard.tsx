@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useJobCard } from "../contexts/JobCardContext";
-import { generateJobCardPDF } from "../utils/pdfGenerator";
+import { generateJobCardPDF } from "../utils/emailService";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 interface EngineerDashboardProps {
@@ -18,7 +18,8 @@ interface EngineerDashboardProps {
 
 export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
   const { user } = useAuth();
-  const { getJobCardsByEngineerId, isLoading, loadJobCardsIfAuthenticated } = useJobCard();
+  const { getJobCardsByEngineerId, isLoading, loadJobCardsIfAuthenticated } =
+    useJobCard();
   const [searchTerm, setSearchTerm] = useState("");
 
   // Load job cards when component mounts and user is authenticated
@@ -48,8 +49,20 @@ export function EngineerDashboard({ onCreateJobCard }: EngineerDashboardProps) {
       card.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDownload = (jobCard: any) => {
-    generateJobCardPDF(jobCard);
+  const handleDownload = async (jobCard: any) => {
+    try {
+      const pdfBlob = await generateJobCardPDF(jobCard);
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `jobcard-${jobCard.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    }
   };
 
   return (
