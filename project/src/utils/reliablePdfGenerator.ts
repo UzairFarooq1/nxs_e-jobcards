@@ -133,50 +133,106 @@ async function generateVisualPDF(jobCard: JobCard): Promise<Blob> {
     addText(jobCard.servicePerformed, 12);
     currentY += 15;
     
-    // Before Service Photos
-    if (jobCard.beforeServiceImages && jobCard.beforeServiceImages.length > 0) {
-      addText('BEFORE SERVICE PHOTOS', 16, true);
+    // Service Photos Section - Side by Side
+    if ((jobCard.beforeServiceImages && jobCard.beforeServiceImages.length > 0) || 
+        (jobCard.afterServiceImages && jobCard.afterServiceImages.length > 0)) {
+      addText('SERVICE PHOTOS', 16, true);
       
-      for (let i = 0; i < jobCard.beforeServiceImages.length; i++) {
-        const imageData = jobCard.beforeServiceImages[i];
-        await addImage(imageData, 150, 100, `Before Service Photo ${i + 1}`);
+      // Calculate the maximum number of photo pairs
+      const maxBeforePhotos = jobCard.beforeServiceImages ? jobCard.beforeServiceImages.length : 0;
+      const maxAfterPhotos = jobCard.afterServiceImages ? jobCard.afterServiceImages.length : 0;
+      const maxPhotoPairs = Math.max(maxBeforePhotos, maxAfterPhotos);
+      
+      for (let i = 0; i < maxPhotoPairs; i++) {
+        checkNewPage(120); // Reserve space for side-by-side photos
+        
+        // Before Service Photo (Left side)
+        if (jobCard.beforeServiceImages && jobCard.beforeServiceImages[i]) {
+          const beforeImageData = jobCard.beforeServiceImages[i];
+          const imageWidth = (contentWidth - 10) / 2; // Half width minus gap
+          const imageHeight = 80;
+          
+          pdf.addImage(beforeImageData, 'JPEG', margin, currentY, imageWidth, imageHeight);
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`Before Service ${i + 1}`, margin, currentY + imageHeight + 5);
+        }
+        
+        // After Service Photo (Right side)
+        if (jobCard.afterServiceImages && jobCard.afterServiceImages[i]) {
+          const afterImageData = jobCard.afterServiceImages[i];
+          const imageWidth = (contentWidth - 10) / 2; // Half width minus gap
+          const imageHeight = 80;
+          const rightX = margin + (contentWidth - 10) / 2 + 10; // Right side position
+          
+          pdf.addImage(afterImageData, 'JPEG', rightX, currentY, imageWidth, imageHeight);
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`After Service ${i + 1}`, rightX, currentY + imageHeight + 5);
+        }
+        
+        currentY += 100; // Move down for next pair
       }
     }
     
-    // After Service Photos
-    if (jobCard.afterServiceImages && jobCard.afterServiceImages.length > 0) {
-      addText('AFTER SERVICE PHOTOS', 16, true);
-      
-      for (let i = 0; i < jobCard.afterServiceImages.length; i++) {
-        const imageData = jobCard.afterServiceImages[i];
-        await addImage(imageData, 150, 100, `After Service Photo ${i + 1}`);
-      }
-    }
+    // Signatures and Stamp Section - Side by Side
+    addText('SIGNATURES & STAMP', 16, true);
+    checkNewPage(100); // Reserve space for signatures and stamp
     
-    // Facility Stamp
-    if (jobCard.facilityStampImage) {
-      addText('FACILITY STAMP', 16, true);
-      await addImage(jobCard.facilityStampImage, 200, 100, 'Official Facility Stamp');
-    }
+    // Left side - Signatures
+    const leftX = margin;
+    const rightX = margin + (contentWidth - 10) / 2 + 10;
+    const signatureHeight = 60;
     
-    // Signatures Section
-    addText('SIGNATURES', 16, true);
-    
-    // Engineer Signature
+    // Engineer Signature (Left side)
     if (jobCard.engineerSignature) {
-      addText('Engineer Signature:', 12, true);
-      await addImage(jobCard.engineerSignature, 150, 60, `${jobCard.engineerName} (${jobCard.engineerId})`);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Engineer Signature:', leftX, currentY);
+      pdf.addImage(jobCard.engineerSignature, 'JPEG', leftX, currentY + 5, (contentWidth - 10) / 2, signatureHeight);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`${jobCard.engineerName} (${jobCard.engineerId})`, leftX, currentY + signatureHeight + 10);
     } else {
-      addText('Engineer Signature: [Not Available]', 12);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Engineer Signature: [Not Available]', leftX, currentY);
     }
     
-    // Facility Representative Signature
+    // Facility Representative Signature (Left side, below engineer)
     if (jobCard.facilitySignature) {
-      addText('Facility Representative Signature:', 12, true);
-      await addImage(jobCard.facilitySignature, 150, 60, 'Authorized Facility Representative');
+      const facilitySignatureY = currentY + signatureHeight + 25;
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Facility Representative:', leftX, facilitySignatureY);
+      pdf.addImage(jobCard.facilitySignature, 'JPEG', leftX, facilitySignatureY + 5, (contentWidth - 10) / 2, signatureHeight);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Authorized Facility Representative', leftX, facilitySignatureY + signatureHeight + 10);
     } else {
-      addText('Facility Representative Signature: [Not Available]', 12);
+      const facilitySignatureY = currentY + signatureHeight + 25;
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Facility Representative: [Not Available]', leftX, facilitySignatureY);
     }
+    
+    // Right side - Facility Stamp
+    if (jobCard.facilityStampImage) {
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Facility Stamp:', rightX, currentY);
+      pdf.addImage(jobCard.facilityStampImage, 'JPEG', rightX, currentY + 5, (contentWidth - 10) / 2, signatureHeight);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Official Facility Stamp', rightX, currentY + signatureHeight + 10);
+    } else {
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Facility Stamp: [Not Available]', rightX, currentY);
+    }
+    
+    // Move currentY down to account for the side-by-side layout
+    currentY += signatureHeight + 80;
     
     // Footer
     checkNewPage(30);
