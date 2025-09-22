@@ -39,6 +39,10 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
   const [manualJobCard, setManualJobCard] = useState<File | null>(null);
   const [manualReason, setManualReason] = useState("");
 
+  // Success dialog state
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
   const [formData, setFormData] = useState({
     hospitalName: "",
     machineType: "",
@@ -203,17 +207,22 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
         const pdfBlob = new Blob([manualJobCard], { type: manualJobCard.type });
         const emailSent = await sendJobCardEmail(jobCardForEmail, pdfBlob);
 
-        alert(
+        setSuccessMessage(
           `Manual Job Card ${jobCardId} uploaded successfully! ${
-            emailSent ? "Email sent to admin." : "Email failed."
+            emailSent ? "Email sent." : "Email failed to send."
           }`
         );
+        setShowSuccess(true);
 
         // Reset form
         setIsManualUpload(false);
         setManualJobCard(null);
         setManualReason("");
-        onBack();
+        // Wait a bit so user can see dialog and then go back
+        setTimeout(() => {
+          setShowSuccess(false);
+          onBack();
+        }, 2000);
       } catch (error) {
         console.error("Error uploading manual job card:", error);
         alert("Error uploading manual job card. Please try again.");
@@ -337,15 +346,16 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
 
         if (emailSent) {
           console.log("✅ Email notification sent successfully");
-          alert(
-            `Job Card ${jobCardId} created successfully! Email notification sent to admin.`
+          setSuccessMessage(
+            `Job Card ${jobCardId} created successfully! Email sent.`
           );
         } else {
           console.log("⚠️ Email notification failed, but job card was created");
-          alert(
-            `Job Card ${jobCardId} created successfully! (Email notification failed - check console for details)`
+          setSuccessMessage(
+            `Job Card ${jobCardId} created successfully! Email failed to send.`
           );
         }
+        setShowSuccess(true);
       } catch (emailError) {
         console.error("❌ Error in email notification process:", emailError);
 
@@ -359,7 +369,10 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
         );
       }
 
-      onBack();
+      setTimeout(() => {
+        setShowSuccess(false);
+        onBack();
+      }, 2000);
     } catch (error) {
       console.error("❌ Error creating job card:", error);
 
@@ -907,6 +920,42 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
           </div>
         </form>
       </div>
+
+      {/* Success Dialog */}
+      {showSuccess && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl text-center">
+            <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+              <svg
+                className="w-7 h-7 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Success</h3>
+            <p className="text-sm text-gray-600 mt-2">{successMessage}</p>
+            <div className="mt-4">
+              <button
+                onClick={() => {
+                  setShowSuccess(false);
+                  onBack();
+                }}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Facility Signature Modal */}
       {showFacilitySignature && (

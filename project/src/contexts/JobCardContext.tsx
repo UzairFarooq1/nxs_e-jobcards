@@ -193,7 +193,7 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
 
       // Step 2: Save to Supabase with timeout
       const { data, error } = await Promise.race([
-        supabase.from("job_cards").insert([dbJobCard]).select().single(),
+        supabase.from("job_cards").insert([dbJobCard]).select().maybeSingle(),
         new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error("Database insert timeout")), 15000)
         ),

@@ -40,7 +40,7 @@ const getEngineerEmail = async (engineerId: string): Promise<string | null> => {
       .from("engineers")
       .select("email")
       .eq("engineer_id", engineerId)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error("Error fetching engineer email:", error);
