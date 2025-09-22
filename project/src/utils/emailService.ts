@@ -65,8 +65,8 @@ const sendViaBackendService = async (jobCard: JobCard, pdfBlob: Blob, engineerEm
 
     // Convert PDF blob to base64 for backend
     const base64Pdf = await blobToBase64(pdfBlob);
-    
-    // Prepare job card data for backend
+
+    // Prepare job card data for backend. Backend will handle CC to engineer and Gladys.
     const jobCardData = {
       id: jobCard.id,
       hospitalName: jobCard.hospitalName,
@@ -188,10 +188,10 @@ const sendViaMailto = async (jobCard: JobCard, pdfBlob: Blob, engineerEmail: str
     const subject = EMAIL_TEMPLATES.JOB_CARD_NOTIFICATION.subject(jobCard.id, jobCard.hospitalName);
     const body = EMAIL_TEMPLATES.JOB_CARD_NOTIFICATION.body(jobCard);
 
-    // Include both admin and engineer emails
+    // Include admin, engineer, and Gladys in recipients
     const recipients = engineerEmail 
-      ? `${EMAIL_CONFIG.ADMIN_EMAIL},${engineerEmail}`
-      : EMAIL_CONFIG.ADMIN_EMAIL;
+      ? `${EMAIL_CONFIG.ADMIN_EMAIL},${engineerEmail},gladys.kariuki@nxsltd.com`
+      : `${EMAIL_CONFIG.ADMIN_EMAIL},gladys.kariuki@nxsltd.com`;
 
     const mailtoUrl = `mailto:${recipients}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     

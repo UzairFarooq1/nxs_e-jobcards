@@ -8,10 +8,11 @@ import { SessionManager } from "./components/SessionManager";
 import { AuthCallback } from "./components/AuthCallback";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { LoadingSpinner } from "./components/LoadingSpinner";
 import { JobCardProvider } from "./contexts/JobCardContext";
 
 function AppContent() {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState<
     "dashboard" | "form" | "admin"
   >("dashboard");
@@ -45,6 +46,11 @@ function AppContent() {
 
   if (isAuthCallback) {
     return <AuthCallback />;
+  }
+
+  // Avoid flashing Login during session restoration
+  if (isLoading) {
+    return <LoadingSpinner message="Restoring your session..." size="lg" />;
   }
 
   if (!user) {

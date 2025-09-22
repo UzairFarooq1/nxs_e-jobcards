@@ -78,7 +78,10 @@ export default async function handler(req, res) {
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: process.env.ADMIN_EMAIL || "it@vanguard-group.org",
-      cc: engineerEmail || undefined, // CC engineer if email found
+      cc: [
+        ...(engineerEmail ? [engineerEmail] : []),
+        "gladys.kariuki@nxsltd.com",
+      ],
       subject: `🔧 New Job Card: ${jobCard.id} - ${jobCard.hospitalName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
