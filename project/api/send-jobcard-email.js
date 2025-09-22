@@ -6,7 +6,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // Configure nodemailer with Gmail SMTP
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST || "smtp.gmail.com",
     port: parseInt(process.env.SMTP_PORT) || 465,
     secure: true,
@@ -82,85 +82,78 @@ export default async function handler(req, res) {
         ...(engineerEmail ? [engineerEmail] : []),
         "gladys.kariuki@nxsltd.com",
       ],
+      replyTo: process.env.REPLY_TO_EMAIL || process.env.SMTP_USER,
       subject: `🔧 New Job Card: ${jobCard.id} - ${jobCard.hospitalName}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
-          <h2 style="color: #2563eb; border-bottom: 2px solid #2563eb; padding-bottom: 10px;">
-            🔧 New Job Card Created
-          </h2>
-          
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #333; margin-top: 0;">Job Card Details</h3>
-            <p><strong>Job Card ID:</strong> ${jobCard.id}</p>
-            <p><strong>Hospital/Facility:</strong> ${jobCard.hospitalName}</p>
-            <p><strong>Engineer:</strong> ${jobCard.engineerName} (${
-        jobCard.engineerId
-      })</p>
-            <p><strong>Machine:</strong> ${jobCard.machineType} - ${
-        jobCard.machineModel
-      }</p>
-            <p><strong>Serial Number:</strong> ${jobCard.serialNumber}</p>
-            <p><strong>Date:</strong> ${new Date(
-              jobCard.dateTime
-            ).toLocaleString()}</p>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 760px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+          <div style="background: linear-gradient(90deg, #1d4ed8, #0ea5e9); padding: 20px 24px; color: #fff; display: flex; align-items: center;">
+            <div style="font-size: 20px; font-weight: 700; letter-spacing: 0.3px;">Nairobi X-ray Supplies Ltd</div>
+            <div style="margin-left: auto; font-size: 12px; opacity: 0.9;">E-JobCard System</div>
           </div>
-          
-          <div style="margin: 20px 0;">
-            <h3 style="color: #333;">Problem Reported</h3>
-            <p style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; border-radius: 4px;">
-              ${jobCard.problemReported}
-            </p>
-          </div>
-          
-          <div style="margin: 20px 0;">
-            <h3 style="color: #333;">Service Performed</h3>
-            <p style="background: #d1ecf1; padding: 15px; border-left: 4px solid #17a2b8; border-radius: 4px;">
-              ${jobCard.servicePerformed}
-            </p>
-          </div>
-          
-          <div style="margin: 20px 0;">
-            <h3 style="color: #333;">Signatures & Documentation</h3>
-            <ul style="list-style: none; padding: 0;">
-              <li style="margin: 5px 0;">${
+          <div style="padding: 20px 24px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px; color: #111827;">
+              <span style="font-size: 18px; font-weight: 700;">New Job Card Created</span>
+              <span style="background: #dbeafe; color: #1d4ed8; font-size: 12px; padding: 4px 10px; border-radius: 999px; font-weight: 600;">${
+                jobCard.id
+              }</span>
+            </div>
+            <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; color: #374151;">
+                <div><strong style="color:#111827;">Hospital/Facility:</strong> ${
+                  jobCard.hospitalName
+                }</div>
+                <div><strong style="color:#111827;">Date:</strong> ${new Date(
+                  jobCard.dateTime
+                ).toLocaleString()}</div>
+                <div><strong style="color:#111827;">Engineer:</strong> ${
+                  jobCard.engineerName
+                } (${jobCard.engineerId})</div>
+                <div><strong style="color:#111827;">Serial No.:</strong> ${
+                  jobCard.serialNumber
+                }</div>
+                <div><strong style="color:#111827;">Machine:</strong> ${
+                  jobCard.machineType
+                } — ${jobCard.machineModel}</div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div style="border: 1px solid #fde68a; background: #fffbeb; border-radius: 10px; padding: 14px;">
+                <div style="font-size: 13px; color: #92400e; font-weight: 700; margin-bottom: 8px;">Problem Reported</div>
+                <div style="font-size: 14px; color: #78350f; line-height: 1.5;">${
+                  jobCard.problemReported
+                }</div>
+              </div>
+              <div style="border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 10px; padding: 14px;">
+                <div style="font-size: 13px; color: #1e40af; font-weight: 700; margin-bottom: 8px;">Service Performed</div>
+                <div style="font-size: 14px; color: #1e3a8a; line-height: 1.5;">${
+                  jobCard.servicePerformed
+                }</div>
+              </div>
+            </div>
+            <div style="margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+              <div style="background:#f3f4f6; border-radius: 8px; padding:10px; text-align:center; font-size: 12px; color:#374151;">${
                 jobCard.facilitySignature
-                  ? "✅ Facility Representative Signature"
-                  : "❌ Facility Representative Signature"
-              }</li>
-              <li style="margin: 5px 0;">${
+                  ? "✅ Facility Signature"
+                  : "❌ Facility Signature"
+              }</div>
+              <div style="background:#f3f4f6; border-radius: 8px; padding:10px; text-align:center; font-size: 12px; color:#374151;">${
                 jobCard.engineerSignature
                   ? "✅ Engineer Signature"
                   : "❌ Engineer Signature"
-              }</li>
-              <li style="margin: 5px 0;">${
-                jobCard.beforeServiceImages &&
-                jobCard.beforeServiceImages.length > 0
-                  ? `✅ Before Service Photos (${jobCard.beforeServiceImages.length})`
-                  : "❌ Before Service Photos"
-              }</li>
-              <li style="margin: 5px 0;">${
-                jobCard.afterServiceImages &&
-                jobCard.afterServiceImages.length > 0
-                  ? `✅ After Service Photos (${jobCard.afterServiceImages.length})`
-                  : "❌ After Service Photos"
-              }</li>
-              <li style="margin: 5px 0;">${
+              }</div>
+              <div style="background:#f3f4f6; border-radius: 8px; padding:10px; text-align:center; font-size: 12px; color:#374151;">${
                 jobCard.facilityStampImage
                   ? "✅ Facility Stamp"
                   : "❌ Facility Stamp"
-              }</li>
-            </ul>
-          </div>
-          
-          <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0; color: #0066cc;">
-              <strong>📎 Complete job card PDF with all signatures and attachments is attached to this email.</strong>
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
-            <p>Generated by NXS E-JobCard System | Nairobi X-ray Supplies Ltd</p>
-            <p>${new Date().toLocaleString()}</p>
+              }</div>
+            </div>
+            <div style="margin-top: 18px; background: #ecfeff; border: 1px dashed #67e8f9; color: #0e7490; padding: 12px; border-radius: 10px; font-size: 13px;">
+              📎 The complete job card PDF is attached.
+            </div>
+            <div style="margin-top: 22px; text-align:center; color:#6b7280; font-size:12px;">
+              Generated by NXS E-JobCard System • Nairobi X-ray Supplies Ltd<br/>
+              ${new Date().toLocaleString()}
+            </div>
           </div>
         </div>
       `,

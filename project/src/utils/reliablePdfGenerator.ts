@@ -93,42 +93,55 @@ async function generateVisualPDF(jobCard: JobCard): Promise<Blob> {
   };
   
   try {
-    // Header
-    pdf.setFontSize(24);
+    // Header with brand bar
+    // Optional: add a simple brand bar at the top
+    pdf.setFillColor(29, 78, 216); // #1d4ed8
+    pdf.rect(0, 0, pageWidth, 18, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Nairobi X-ray Supplies Limited', margin, currentY);
-    currentY += 10;
-    
-    pdf.setFontSize(16);
+    pdf.text('Nairobi X-ray Supplies Ltd', margin, 12);
+    pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('E-JobCard System', margin, currentY);
-    currentY += 15;
+    pdf.text('E-JobCard System', pageWidth - margin - 35, 12);
+    pdf.setTextColor(0, 0, 0);
+    currentY = margin + 10;
     
+    // Title Row
     pdf.setFontSize(18);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`Job Card ID: ${jobCard.id}`, margin, currentY);
-    currentY += 20;
+    pdf.text(`Job Card: ${jobCard.id}`, margin, currentY);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    const generatedOn = `Generated: ${new Date(jobCard.dateTime).toLocaleString()}`;
+    const textWidth = pdf.getTextWidth(generatedOn);
+    pdf.text(generatedOn, pageWidth - margin - textWidth, currentY);
+    currentY += 10;
+    // Divider
+    pdf.setDrawColor(226, 232, 240); // light gray
+    pdf.line(margin, currentY, pageWidth - margin, currentY);
+    currentY += 8;
     
-    // Job Details
+    // Job Details Card
     addText('JOB DETAILS', 16, true);
     addText(`Hospital/Facility: ${jobCard.hospitalName}`, 12);
     addText(`Engineer: ${jobCard.engineerName} (${jobCard.engineerId})`, 12);
     addText(`Date: ${new Date(jobCard.dateTime).toLocaleString()}`, 12);
     currentY += 10;
     
-    // Machine Details
+    // Machine Details Card
     addText('MACHINE DETAILS', 16, true);
     addText(`Type: ${jobCard.machineType}`, 12);
     addText(`Model: ${jobCard.machineModel}`, 12);
     addText(`Serial Number: ${jobCard.serialNumber}`, 12);
     currentY += 10;
     
-    // Problem Reported
+    // Problem Reported Card
     addText('PROBLEM REPORTED', 16, true);
     addText(jobCard.problemReported, 12);
     currentY += 10;
     
-    // Service Performed
+    // Service Performed Card
     addText('SERVICE PERFORMED', 16, true);
     addText(jobCard.servicePerformed, 12);
     currentY += 15;
