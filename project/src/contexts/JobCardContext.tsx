@@ -182,7 +182,6 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
         engineer_name: newJobCard.engineerName,
         engineer_id: newJobCard.engineerId,
         date_time: new Date(newJobCard.dateTime).toISOString(), // Convert to UTC for database
-        created_at: newJobCard.createdAt,
         status: newJobCard.status,
         before_service_images: newJobCard.beforeServiceImages || [],
         after_service_images: newJobCard.afterServiceImages || [],
