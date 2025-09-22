@@ -12,21 +12,26 @@ export const generateNextJobCardId = async (existingJobCards: JobCard[]): Promis
       .from("job_cards")
       .select("id")
       .like("id", "NXS-%")
-      .order("id", { ascending: false })
-      .limit(1);
+      .order("created_at", { ascending: false })
+      .limit(10);
 
     let maxNumber = 0;
     
-    if (!error && dbJobCards && dbJobCards.length > 0) {
-      const match = dbJobCards[0].id.match(/NXS-(\d+)/);
-      if (match) {
-        maxNumber = parseInt(match[1], 10);
+    if (!error && Array.isArray(dbJobCards)) {
+      for (const row of dbJobCards) {
+        const idValue = typeof row.id === 'string' ? row.id : '';
+        const match = idValue.match(/NXS-(\d+)/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          maxNumber = Math.max(maxNumber, num);
+        }
       }
     }
 
     // Also check local state for any higher numbers
-    const localMaxNumber = existingJobCards.reduce((max, card) => {
-      const match = card.id.match(/NXS-(\d+)/);
+    const localMaxNumber = (existingJobCards || []).reduce((max, card) => {
+      const idValue = typeof card?.id === 'string' ? card.id : '';
+      const match = idValue.match(/NXS-(\d+)/);
       if (match) {
         const num = parseInt(match[1], 10);
         return Math.max(max, num);
