@@ -12,9 +12,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
-          // Keep logo_main.png in root for easy access
-          if (assetInfo.name === 'logo_main.png') {
-            return 'logo_main.png';
+          // Keep logo files in root for easy access
+          if (assetInfo.name === 'logomain.png' || assetInfo.name === 'logo_main.png') {
+            return '[name][extname]';
           }
           return 'assets/[name].[hash][extname]';
         },
