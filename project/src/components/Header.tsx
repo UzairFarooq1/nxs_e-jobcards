@@ -3,7 +3,6 @@ import { LogOut, BarChart3, Plus, Cloud, Clock } from "lucide-react";
 import { User } from "../contexts/AuthContext";
 import { useJobCard } from "../contexts/JobCardContext";
 import { getInactivityManager } from "../utils/inactivityManager";
-import logomain from "../images/logomain.png";
 
 interface HeaderProps {
   user: User;
@@ -46,7 +45,15 @@ export function Header({
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
-              <img src={logomain} alt="NXS Logo" className="h-10 w-auto" />
+              <img
+                src="/static/images/logo.jpg"
+                alt="NXS Logo"
+                className="h-10 w-auto"
+                onError={(e) => {
+                  console.log("Logo failed to load");
+                  e.currentTarget.style.display = "none";
+                }}
+              />
               <div>
                 <h1 className="text-lg font-bold text-gray-900">
                   NXS E-JobCard
