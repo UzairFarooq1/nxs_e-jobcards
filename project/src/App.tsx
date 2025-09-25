@@ -50,7 +50,13 @@ function AppContent() {
 
   // Avoid flashing Login during session restoration
   if (isLoading) {
-    return <LoadingSpinner message="Restoring your session..." size="lg" />;
+    return (
+      <LoadingSpinner
+        message="Restoring your session..."
+        size="lg"
+        variant="bars"
+      />
+    );
   }
 
   if (!user) {
@@ -74,7 +80,7 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-cyan-50">
       <Header
         user={user}
         currentView={currentView}

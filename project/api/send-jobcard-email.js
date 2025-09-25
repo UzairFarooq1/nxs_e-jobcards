@@ -64,17 +64,36 @@ export default async function handler(req, res) {
         .from("engineers")
         .select("email")
         .eq("engineer_id", jobCard.engineerId)
-        .single();
+        .maybeSingle();
 
       if (!engineerError && engineerData) {
         engineerEmail = engineerData.email;
         console.log("📧 Engineer email found:", engineerEmail);
+      } else {
+        console.log("📧 No engineer email found for engineer_id:", jobCard.engineerId);
+        console.log("📧 Engineer lookup error:", engineerError);
+        
+        // Fallback: try to construct email from engineer name if available
+        if (jobCard.engineerName) {
+          const nameParts = jobCard.engineerName.toLowerCase().split(' ');
+          if (nameParts.length >= 2) {
+            const firstName = nameParts[0];
+            const lastName = nameParts[nameParts.length - 1];
+            engineerEmail = `${firstName}.${lastName}@nxsltd.com`;
+            console.log("📧 Using fallback email:", engineerEmail);
+          }
+        }
       }
     } catch (error) {
       console.error("Error fetching engineer email:", error);
     }
 
     // Email content with enhanced details
+    console.log("📧 Email recipients:");
+    console.log("📧 TO:", process.env.ADMIN_EMAIL || "it@vanguard-group.org");
+    console.log("📧 CC Engineer:", engineerEmail);
+    console.log("📧 CC Gladys: gladys.kariuki@nxsltd.com");
+    
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: process.env.ADMIN_EMAIL || "it@vanguard-group.org",
