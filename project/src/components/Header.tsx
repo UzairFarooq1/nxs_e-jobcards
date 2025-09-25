@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { LogOut, BarChart3, Plus, Cloud, Clock } from "lucide-react";
 import { User } from "../contexts/AuthContext";
-import { useJobCard } from "../contexts/JobCardContext";
-import { getInactivityManager } from "../utils/inactivityManager";
 
 interface HeaderProps {
   user: User;
@@ -17,26 +15,11 @@ export function Header({
   onViewChange,
   onLogout,
 }: HeaderProps) {
-  const { isDriveInitialized } = useJobCard();
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
 
   useEffect(() => {
-    const inactivityManager = getInactivityManager();
-
-    const checkTimeLeft = () => {
-      const remaining = inactivityManager.getRemainingTime();
-      if (remaining > 0 && remaining < 5 * 60 * 1000) {
-        // Less than 5 minutes
-        setTimeLeft(Math.ceil(remaining / 1000));
-      } else {
-        setTimeLeft(null);
-      }
-    };
-
-    const interval = setInterval(checkTimeLeft, 1000);
-    checkTimeLeft();
-
-    return () => clearInterval(interval);
+    // Session timeout management removed - using simple session persistence
+    setTimeLeft(null);
   }, []);
 
   return (
@@ -98,9 +81,7 @@ export function Header({
             {/* Storage Status */}
             <div className="flex items-center space-x-2 text-xs text-gray-500">
               <Cloud className="w-4 h-4" />
-              <span>
-                {isDriveInitialized ? "Google Drive" : "Local Storage"}
-              </span>
+              <span>Database Storage</span>
             </div>
 
             {/* Session Timer */}

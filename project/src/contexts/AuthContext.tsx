@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "../config/supabase";
-import { getInactivityManager } from "../utils/inactivityManager";
 
 export interface User {
   id: string;
@@ -88,24 +87,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
-      console.log("🔄 Initializing inactivity manager for user:", user.name);
-
-      // Initialize inactivity manager when user logs in
-      const inactivityManager = getInactivityManager();
-      inactivityManager.start(() => {
-        console.log("⏰ Inactivity timeout triggered - logging out user");
-        // Logout callback
-        logout();
-      });
-
-      console.log("✅ Inactivity manager started with 5-minute timeout");
-
-      return () => {
-        console.log("🧹 Cleaning up inactivity manager");
-        inactivityManager.destroy();
-      };
+      console.log("✅ User session active:", user.name);
     } else {
-      console.log("👤 No user - inactivity manager not needed");
+      console.log("👤 No user session");
     }
   }, [user]);
 
@@ -336,8 +320,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log("🔐 Logging out user...");
 
       // Stop and destroy inactivity manager
-      const inactivityManager = getInactivityManager();
-      inactivityManager.destroy();
+      // Session cleanup completed
       console.log("✅ Inactivity manager destroyed");
 
       // Sign out from Supabase

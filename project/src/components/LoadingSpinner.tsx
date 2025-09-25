@@ -1,5 +1,20 @@
 import React from "react";
 
+// Add CSS animation for bars
+const barsAnimation = `
+  @keyframes bars {
+    0%, 100% { transform: scaleY(0.3); }
+    50% { transform: scaleY(1); }
+  }
+`;
+
+// Inject the CSS
+if (typeof document !== "undefined") {
+  const style = document.createElement("style");
+  style.textContent = barsAnimation;
+  document.head.appendChild(style);
+}
+
 interface LoadingSpinnerProps {
   message?: string;
   size?: "sm" | "md" | "lg";
@@ -21,36 +36,62 @@ export function LoadingSpinner({
     switch (variant) {
       case "bars":
         return (
-          <div
-            className={`${sizeClasses[size]} flex items-end justify-center space-x-1`}
-          >
+          <div className="flex items-end justify-center space-x-1 h-12">
             <div
-              className="w-1 bg-blue-600 animate-pulse"
-              style={{ animationDelay: "0ms", height: "25%" }}
+              className="w-1 bg-blue-600 rounded-full"
+              style={{
+                animation: "bars 1.2s ease-in-out infinite",
+                animationDelay: "0ms",
+                height: "25%",
+              }}
             ></div>
             <div
-              className="w-1 bg-blue-600 animate-pulse"
-              style={{ animationDelay: "150ms", height: "50%" }}
+              className="w-1 bg-blue-600 rounded-full"
+              style={{
+                animation: "bars 1.2s ease-in-out infinite",
+                animationDelay: "150ms",
+                height: "50%",
+              }}
             ></div>
             <div
-              className="w-1 bg-blue-600 animate-pulse"
-              style={{ animationDelay: "300ms", height: "75%" }}
+              className="w-1 bg-blue-600 rounded-full"
+              style={{
+                animation: "bars 1.2s ease-in-out infinite",
+                animationDelay: "300ms",
+                height: "75%",
+              }}
             ></div>
             <div
-              className="w-1 bg-blue-600 animate-pulse"
-              style={{ animationDelay: "450ms", height: "100%" }}
+              className="w-1 bg-blue-600 rounded-full"
+              style={{
+                animation: "bars 1.2s ease-in-out infinite",
+                animationDelay: "450ms",
+                height: "100%",
+              }}
             ></div>
             <div
-              className="w-1 bg-blue-600 animate-pulse"
-              style={{ animationDelay: "600ms", height: "75%" }}
+              className="w-1 bg-blue-600 rounded-full"
+              style={{
+                animation: "bars 1.2s ease-in-out infinite",
+                animationDelay: "600ms",
+                height: "75%",
+              }}
             ></div>
             <div
-              className="w-1 bg-blue-600 animate-pulse"
-              style={{ animationDelay: "750ms", height: "50%" }}
+              className="w-1 bg-blue-600 rounded-full"
+              style={{
+                animation: "bars 1.2s ease-in-out infinite",
+                animationDelay: "750ms",
+                height: "50%",
+              }}
             ></div>
             <div
-              className="w-1 bg-blue-600 animate-pulse"
-              style={{ animationDelay: "900ms", height: "25%" }}
+              className="w-1 bg-blue-600 rounded-full"
+              style={{
+                animation: "bars 1.2s ease-in-out infinite",
+                animationDelay: "900ms",
+                height: "25%",
+              }}
             ></div>
           </div>
         );
@@ -109,10 +150,12 @@ export function LoadingSpinner({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen w-full">
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm z-50">
       <div className="flex flex-col items-center justify-center p-8">
         {renderSpinner()}
-        <p className="mt-4 text-gray-600 text-sm text-center">{message}</p>
+        <p className="mt-4 text-gray-600 text-sm text-center max-w-sm">
+          {message}
+        </p>
       </div>
     </div>
   );

@@ -31,7 +31,6 @@ interface JobCardContextType {
   addJobCard: (jobCard: Omit<JobCard, "id" | "createdAt">) => Promise<string>;
   getJobCardsByEngineerId: (engineerId: string) => JobCard[];
   getAllJobCards: () => JobCard[];
-  isDriveInitialized: boolean;
   isLoading: boolean;
   refreshJobCards: () => Promise<void>;
   loadJobCardsIfAuthenticated: () => Promise<void>;
@@ -49,7 +48,6 @@ export function useJobCard() {
 
 export function JobCardProvider({ children }: { children: React.ReactNode }) {
   const [jobCards, setJobCards] = useState<JobCard[]>([]);
-  const [isDriveInitialized, setIsDriveInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false); // Start as false, only load when user is authenticated
 
   const loadJobCards = async () => {
@@ -198,13 +196,13 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
       ]);
 
       if (error) {
-        console.error("Error saving job card to database:", error);
-        console.log("Falling back to localStorage");
-        // Fallback to localStorage
-        const updatedJobCards = [...jobCards, newJobCard];
-        setJobCards(updatedJobCards);
-        localStorage.setItem("nxs-jobcards", JSON.stringify(updatedJobCards));
-        return newJobCard.id;
+        console.error("❌ Error saving job card to database:", error);
+        // Stop all processes - do not save to localStorage
+        throw new Error(
+          `Failed to save job card to database: ${
+            error.message || "Unknown database error"
+          }`
+        );
       }
 
       console.log("Successfully saved to Supabase:", data);
@@ -234,25 +232,13 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
       setJobCards((prev) => [mappedData, ...prev]);
       return data.id;
     } catch (error) {
-      console.error("Error saving job card:", error);
-      console.log("Falling back to localStorage due to error");
-
-      // If newJobCard is not defined, create it now
-      if (!newJobCard) {
-        jobCardId = await generateNextJobCardId(jobCards);
-        newJobCard = {
-          ...jobCardData,
-          id: jobCardId,
-          createdAt: new Date().toISOString(),
-          status: "completed" as const,
-        };
-      }
-
-      // Fallback to localStorage
-      const updatedJobCards = [...jobCards, newJobCard];
-      setJobCards(updatedJobCards);
-      localStorage.setItem("nxs-jobcards", JSON.stringify(updatedJobCards));
-      return newJobCard.id;
+      console.error("❌ Job card creation failed:", error);
+      // Stop all processes - do not save to localStorage
+      throw new Error(
+        `Job card creation failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   };
 
@@ -271,7 +257,6 @@ export function JobCardProvider({ children }: { children: React.ReactNode }) {
         addJobCard,
         getJobCardsByEngineerId,
         getAllJobCards,
-        isDriveInitialized,
         isLoading,
         refreshJobCards,
         loadJobCardsIfAuthenticated,

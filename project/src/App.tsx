@@ -4,7 +4,6 @@ import { EngineerDashboard } from "./components/EngineerDashboard";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { JobCardForm } from "./components/JobCardForm";
 import { Header } from "./components/Header";
-import { SessionManager } from "./components/SessionManager";
 import { AuthCallback } from "./components/AuthCallback";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -131,9 +130,7 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <JobCardProvider>
-          <SessionManager>
-            <AppContent />
-          </SessionManager>
+          <AppContent />
         </JobCardProvider>
       </AuthProvider>
     </ErrorBoundary>

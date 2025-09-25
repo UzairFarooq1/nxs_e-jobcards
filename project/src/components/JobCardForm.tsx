@@ -390,8 +390,12 @@ export function JobCardForm({ onBack }: JobCardFormProps) {
       } else if (errorMessage.includes("network")) {
         userMessage =
           "Network error. Please check your internet connection and try again.";
-      } else if (errorMessage.includes("database")) {
-        userMessage = "Database error. Please try again in a few moments.";
+      } else if (
+        errorMessage.includes("database") ||
+        errorMessage.includes("Failed to save job card to database")
+      ) {
+        userMessage =
+          "❌ Database error: Failed to save job card. Please check your connection and try again. Do not refresh the page.";
       }
 
       alert(userMessage);
