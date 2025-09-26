@@ -30,6 +30,9 @@ export function useAuth() {
   return context;
 }
 
+// Simple cache to avoid repeated database calls
+const userCache = new Map<string, User>();
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -104,15 +107,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Loading user from session:", supabaseUser.email);
 
+      // Check cache first
+      const cachedUser = userCache.get(supabaseUser.email);
+      if (cachedUser) {
+        console.log("✅ Using cached user data:", cachedUser.name);
+        setUser(cachedUser);
+        return;
+      }
+
       // Check if admin
       if (supabaseUser.email === "it@vanguard-group.org") {
         console.log("Setting admin user");
-        setUser({
+        const adminUser = {
           id: supabaseUser.id,
           name: "Admin User",
           email: supabaseUser.email,
-          role: "admin",
-        });
+          role: "admin" as const,
+        };
+        userCache.set(supabaseUser.email, adminUser);
+        setUser(adminUser);
         return;
       }
 
@@ -126,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Database query timeout")), 15000)
+        setTimeout(() => reject(new Error("Database query timeout")), 5000)
       );
 
       try {
@@ -137,13 +150,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (engineer && !error) {
           console.log("Engineer found:", engineer.name);
-          setUser({
+          const engineerUser = {
             id: engineer.id,
             name: engineer.name,
             email: engineer.email,
-            role: "engineer",
+            role: "engineer" as const,
             engineerId: engineer.engineer_id,
-          });
+          };
+          userCache.set(supabaseUser.email, engineerUser);
+          setUser(engineerUser);
         } else {
           // If user exists in auth but not in engineers table, log them out
           console.warn("User not found in engineers table, logging out");
@@ -196,13 +211,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
         if (knownEngineer) {
           console.log("Using fallback engineer data:", knownEngineer.name);
-          setUser({
+          const fallbackUser = {
             id: `fallback-${knownEngineer.engineerId}`,
             name: knownEngineer.name,
             email: knownEngineer.email,
-            role: "engineer",
+            role: "engineer" as const,
             engineerId: knownEngineer.engineerId,
-          });
+          };
+          userCache.set(supabaseUser.email, fallbackUser);
+          setUser(fallbackUser);
         } else {
           console.warn("Unknown engineer - logging out user");
           console.log(
@@ -319,9 +336,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("🔐 Logging out user...");
 
-      // Stop and destroy inactivity manager
-      // Session cleanup completed
-      console.log("✅ Inactivity manager destroyed");
+      // Clear user cache
+      if (user?.email) {
+        userCache.delete(user.email);
+        console.log("✅ User cache cleared");
+      }
 
       // Sign out from Supabase
       await supabase.auth.signOut();
