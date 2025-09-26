@@ -63,8 +63,7 @@ const sendViaBackendService = async (jobCard: JobCard, pdfBlob: Blob, engineerEm
     console.log("📧 Backend URL:", EMAIL_CONFIG.BACKEND_API_URL);
     console.log("📧 PDF size:", pdfBlob.size, "bytes");
 
-    // Convert PDF blob to base64 for backend
-    const base64Pdf = await blobToBase64(pdfBlob);
+    // Note: PDF is sent as blob in FormData, not as base64
 
     // Prepare job card data for backend. Backend will handle CC to engineer and Gladys.
     const jobCardData = {
@@ -86,6 +85,12 @@ const sendViaBackendService = async (jobCard: JobCard, pdfBlob: Blob, engineerEm
       facilityStampImage: jobCard.facilityStampImage || ""
     };
 
+    console.log("📧 Frontend sending job card data:", {
+      engineerName: jobCardData.engineerName,
+      engineerId: jobCardData.engineerId,
+      engineerEmail: jobCardData.engineerEmail
+    });
+
     // Create FormData for file upload
     const formData = new FormData();
     formData.append('jobCardData', JSON.stringify(jobCardData));
@@ -103,6 +108,7 @@ const sendViaBackendService = async (jobCard: JobCard, pdfBlob: Blob, engineerEm
 
     const result = await response.json();
     console.log("✅ Email sent successfully via backend:", result);
+    console.log("📧 Backend response recipients:", result.recipients);
     return true;
   } catch (error) {
     console.error("❌ Error sending email via backend:", error);
@@ -183,7 +189,7 @@ const sendViaEmailService = async (jobCard: JobCard, pdfBlob: Blob, engineerEmai
 /**
  * Send email using browser's mailto (development fallback)
  */
-const sendViaMailto = async (jobCard: JobCard, pdfBlob: Blob, engineerEmail: string | null): Promise<boolean> => {
+const sendViaMailto = async (jobCard: JobCard, _pdfBlob: Blob, engineerEmail: string | null): Promise<boolean> => {
   try {
     const subject = EMAIL_TEMPLATES.JOB_CARD_NOTIFICATION.subject(jobCard.id, jobCard.hospitalName);
     const body = EMAIL_TEMPLATES.JOB_CARD_NOTIFICATION.body(jobCard);
@@ -229,4 +235,39 @@ export const generateJobCardPDF = async (jobCard: JobCard): Promise<Blob> => {
   // Use the reliable PDF generator
   const { generateReliableJobCardPDF } = await import('./reliablePdfGenerator');
   return await generateReliableJobCardPDF(jobCard);
+}
+
+/**
+ * Debug function to test engineer email lookup
+ */
+export const debugEngineerEmail = async (engineerId: string): Promise<void> => {
+  console.log("🔧 DEBUG: Testing engineer email lookup for ID:", engineerId);
+
+  try {
+    // Test database connection
+    const { error: testError } = await supabase.from("engineers").select("count").limit(1);
+
+    if (testError) {
+      console.error("❌ Database connection failed:", testError);
+      return;
+    }
+
+    console.log("✅ Database connection successful");
+
+    // Get all engineers
+    const { data: allEngineers, error: allError } = await supabase.from("engineers").select("engineer_id, email, name");
+
+    if (allError) {
+      console.error("❌ Failed to fetch all engineers:", allError);
+      return;
+    }
+
+    console.log("📊 All engineers in database:", allEngineers);
+
+    // Test specific engineer lookup
+    const engineerEmail = await getEngineerEmail(engineerId);
+    console.log("🎯 Result for engineer ID", engineerId, ":", engineerEmail);
+  } catch (error) {
+    console.error("❌ Debug function failed:", error);
+  }
 };

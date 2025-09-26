@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useJobCard } from "../contexts/JobCardContext";
 import { useAuth } from "../contexts/AuthContext";
+import { EmailDebugPanel } from "./EmailDebugPanel";
 import { generateJobCardPDF } from "../utils/emailService";
 
 export function AdminDashboard() {
@@ -25,7 +26,7 @@ export function AdminDashboard() {
   const { getAllUsers, addEngineer, editEngineer } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
-  const [currentView, setCurrentView] = useState<"dashboard" | "engineers">(
+  const [currentView, setCurrentView] = useState<"dashboard" | "engineers" | "debug">(
     "dashboard"
   );
   const [engineers, setEngineers] = useState<any[]>([]);
@@ -388,6 +389,31 @@ export function AdminDashboard() {
     );
   }
 
+  if (currentView === "debug") {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Email Debug Panel
+              </h1>
+              <p className="text-gray-600">Debug email sending issues and test engineer email lookup</p>
+            </div>
+            <button
+              onClick={() => setCurrentView("dashboard")}
+              className="bg-gray-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-700 transition-colors flex items-center space-x-2"
+            >
+              <X className="w-5 h-5" />
+              <span>Back to Dashboard</span>
+            </button>
+          </div>
+        </div>
+        <EmailDebugPanel />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
       {/* Subtle background pattern */}
@@ -408,6 +434,13 @@ export function AdminDashboard() {
               >
                 <Settings className="w-5 h-5" />
                 <span>Manage Engineers</span>
+              </button>
+              <button
+                onClick={() => setCurrentView("debug")}
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors flex items-center space-x-2"
+              >
+                <Wrench className="w-5 h-5" />
+                <span>Email Debug</span>
               </button>
               {filteredJobCards.length > 0 && (
                 <button

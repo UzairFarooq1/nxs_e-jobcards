@@ -53,6 +53,12 @@ export default async function handler(req, res) {
 
     // Get engineer's email from database
     let engineerEmail = null;
+    console.log(
+      "📧 Looking up engineer email for engineerId:",
+      jobCard.engineerId
+    );
+    console.log("📧 Engineer name:", jobCard.engineerName);
+
     try {
       const { createClient } = require("@supabase/supabase-js");
       const supabase = createClient(
@@ -66,26 +72,50 @@ export default async function handler(req, res) {
         .eq("engineer_id", jobCard.engineerId)
         .maybeSingle();
 
-      if (!engineerError && engineerData) {
+      console.log("📧 Database query result:", { engineerData, engineerError });
+
+      if (!engineerError && engineerData && engineerData.email) {
         engineerEmail = engineerData.email;
-        console.log("📧 Engineer email found:", engineerEmail);
+        console.log("✅ Engineer email found in database:", engineerEmail);
       } else {
-        console.log("📧 No engineer email found for engineer_id:", jobCard.engineerId);
+        console.log(
+          "⚠️ No engineer email found for engineer_id:",
+          jobCard.engineerId
+        );
         console.log("📧 Engineer lookup error:", engineerError);
-        
+
         // Fallback: try to construct email from engineer name if available
         if (jobCard.engineerName) {
-          const nameParts = jobCard.engineerName.toLowerCase().split(' ');
+          const nameParts = jobCard.engineerName.toLowerCase().split(" ");
           if (nameParts.length >= 2) {
             const firstName = nameParts[0];
             const lastName = nameParts[nameParts.length - 1];
             engineerEmail = `${firstName}.${lastName}@nxsltd.com`;
             console.log("📧 Using fallback email:", engineerEmail);
+          } else {
+            console.log(
+              "⚠️ Cannot construct email from name:",
+              jobCard.engineerName
+            );
           }
+        } else {
+          console.log("⚠️ No engineer name available for fallback");
         }
       }
     } catch (error) {
-      console.error("Error fetching engineer email:", error);
+      console.error("❌ Error fetching engineer email:", error);
+      console.log("📧 Will try fallback email construction...");
+
+      // Fallback: try to construct email from engineer name if available
+      if (jobCard.engineerName) {
+        const nameParts = jobCard.engineerName.toLowerCase().split(" ");
+        if (nameParts.length >= 2) {
+          const firstName = nameParts[0];
+          const lastName = nameParts[nameParts.length - 1];
+          engineerEmail = `${firstName}.${lastName}@nxsltd.com`;
+          console.log("📧 Using fallback email after error:", engineerEmail);
+        }
+      }
     }
 
     // Email content with enhanced details
@@ -93,14 +123,19 @@ export default async function handler(req, res) {
     console.log("📧 TO:", process.env.ADMIN_EMAIL || "it@vanguard-group.org");
     console.log("📧 CC Engineer:", engineerEmail);
     console.log("📧 CC Gladys: gladys.kariuki@nxsltd.com");
-    
+
+    const ccList = [
+      ...(engineerEmail ? [engineerEmail] : []),
+      "gladys.kariuki@nxsltd.com",
+    ];
+
+    console.log("📧 Final CC list:", ccList);
+    console.log("📧 CC list length:", ccList.length);
+
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: process.env.ADMIN_EMAIL || "it@vanguard-group.org",
-      cc: [
-        ...(engineerEmail ? [engineerEmail] : []),
-        "gladys.kariuki@nxsltd.com",
-      ],
+      cc: ccList,
       replyTo: process.env.REPLY_TO_EMAIL || process.env.SMTP_USER,
       subject: `🔧 New Job Card: ${jobCard.id} - ${jobCard.hospitalName}`,
       html: `
@@ -186,14 +221,31 @@ export default async function handler(req, res) {
     };
 
     // Send email
+    console.log("📧 Sending email with options:", {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      cc: mailOptions.cc,
+      subject: mailOptions.subject,
+      hasAttachments: mailOptions.attachments?.length > 0,
+    });
+
     const info = await transporter.sendMail(mailOptions);
 
-    console.log("Email sent successfully:", info.messageId);
+    console.log("✅ Email sent successfully!");
+    console.log("📧 Message ID:", info.messageId);
+    console.log("📧 Accepted recipients:", info.accepted);
+    console.log("📧 Rejected recipients:", info.rejected);
 
     res.status(200).json({
       success: true,
       messageId: info.messageId,
       message: "Job card email sent successfully",
+      recipients: {
+        to: mailOptions.to,
+        cc: mailOptions.cc,
+        accepted: info.accepted,
+        rejected: info.rejected,
+      },
     });
   } catch (error) {
     console.error("Error sending email:", error);
