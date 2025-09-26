@@ -29,11 +29,13 @@ export function Header({
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
               <img
-                src="/static/images/logo.jpg"
+                src="/logomain.png"
                 alt="NXS Logo"
                 className="h-10 w-auto"
                 onError={(e) => {
-                  console.log("Logo failed to load");
+                  console.log(
+                    "Logo failed to load - please ensure logomain.png is in the public folder"
+                  );
                   e.currentTarget.style.display = "none";
                 }}
               />
