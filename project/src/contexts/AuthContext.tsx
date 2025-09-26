@@ -139,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Database query timeout")), 5000)
+        setTimeout(() => reject(new Error("Database query timeout")), 3000)
       );
 
       try {
@@ -175,63 +175,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (timeoutError) {
         console.error("Database query timed out:", timeoutError);
-        console.warn("Database timeout - using fallback authentication");
+        console.warn("Database timeout - redirecting to login");
 
-        // Fallback: Check if this is a known engineer email
-        const knownEngineers = [
-          {
-            email: "charles.wanjohi@nxsltd.com",
-            name: "Charles Wanjohi",
-            engineerId: "ENG-001",
-          },
-          {
-            email: "juliet.timpiyian@nxsltd.com",
-            name: "Juliet Timpiyian",
-            engineerId: "ENG-002",
-          },
-          {
-            email: "john.doe@nxsltd.com",
-            name: "John Doe",
-            engineerId: "ENG-003",
-          },
-          {
-            email: "jane.smith@nxsltd.com",
-            name: "Jane Smith",
-            engineerId: "ENG-004",
-          },
-          {
-            email: "uzair.farooq@nxsltd.com",
-            name: "Uzair Farooq",
-            engineerId: "ENG-005",
-          },
-        ];
+        // Database timeout - redirect to login instead of using fallback
+        try {
+          // Clear user cache to force fresh lookup on next login
+          userCache.clear();
+          console.log("🗑️ User cache cleared due to database timeout");
 
-        const knownEngineer = knownEngineers.find(
-          (e) => e.email === supabaseUser.email
-        );
-        if (knownEngineer) {
-          console.log("Using fallback engineer data:", knownEngineer.name);
-          const fallbackUser = {
-            id: `fallback-${knownEngineer.engineerId}`,
-            name: knownEngineer.name,
-            email: knownEngineer.email,
-            role: "engineer" as const,
-            engineerId: knownEngineer.engineerId,
-          };
-          userCache.set(supabaseUser.email, fallbackUser);
-          setUser(fallbackUser);
-        } else {
-          console.warn("Unknown engineer - logging out user");
-          console.log(
-            "💡 To add this user to fallback list, add them to knownEngineers array in AuthContext.tsx"
-          );
-
-          // Sign out and ensure loading state is cleared
-          try {
-            await supabase.auth.signOut();
-          } catch (signOutError) {
-            console.error("Error signing out:", signOutError);
-          }
+          await supabase.auth.signOut();
+          setUser(null);
+          console.log("✅ User signed out due to database timeout");
+        } catch (signOutError) {
+          console.error("Error during sign out:", signOutError);
           setUser(null);
         }
       }

@@ -1,56 +1,66 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-import { EmailDebugger } from "../utils/emailDebugger"
-import { debugEngineerEmail } from "../utils/emailService"
+import type React from "react";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { EmailDebugger } from "../utils/emailDebugger";
+import { debugEngineerEmail } from "../utils/emailService";
 
 export const EmailDebugPanel: React.FC = () => {
-  const [engineerId, setEngineerId] = useState("")
-  const [isDebugging, setIsDebugging] = useState(false)
+  const [engineerId, setEngineerId] = useState("");
+  const [isDebugging, setIsDebugging] = useState(false);
 
   const handleRunDiagnostic = async () => {
-    setIsDebugging(true)
+    setIsDebugging(true);
     try {
-      console.clear()
-      console.log("🔧 EMAIL DEBUG PANEL - Starting diagnostic...")
-      await EmailDebugger.runFullDiagnostic(engineerId || undefined)
+      console.clear();
+      console.log("🔧 EMAIL DEBUG PANEL - Starting diagnostic...");
+      await EmailDebugger.runFullDiagnostic(engineerId || undefined);
 
       if (engineerId) {
-        console.log("🔧 Testing email service function...")
-        await debugEngineerEmail(engineerId)
+        console.log("🔧 Testing email service function...");
+        await debugEngineerEmail(engineerId);
       }
 
-      console.log("✅ Diagnostic complete! Check the console for detailed results.")
+      console.log(
+        "✅ Diagnostic complete! Check the console for detailed results."
+      );
     } catch (error) {
-      console.error("❌ Diagnostic failed:", error)
+      console.error("❌ Diagnostic failed:", error);
     } finally {
-      setIsDebugging(false)
+      setIsDebugging(false);
     }
-  }
+  };
 
   const handleTestDatabase = async () => {
-    setIsDebugging(true)
+    setIsDebugging(true);
     try {
-      console.clear()
-      console.log("🔧 Testing database connection...")
-      await EmailDebugger.testDatabaseConnection()
-      await EmailDebugger.listAllEngineers()
+      console.clear();
+      console.log("🔧 Testing database connection...");
+      await EmailDebugger.testDatabaseConnection();
+      await EmailDebugger.listAllEngineers();
     } catch (error) {
-      console.error("❌ Database test failed:", error)
+      console.error("❌ Database test failed:", error);
     } finally {
-      setIsDebugging(false)
+      setIsDebugging(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>Email Debug Panel</CardTitle>
-        <CardDescription>Debug email sending issues and test engineer email lookup</CardDescription>
+        <CardDescription>
+          Debug email sending issues and test engineer email lookup
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -66,7 +76,11 @@ export const EmailDebugPanel: React.FC = () => {
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          <Button onClick={handleRunDiagnostic} disabled={isDebugging} className="flex-1">
+          <Button
+            onClick={handleRunDiagnostic}
+            disabled={isDebugging}
+            className="flex-1"
+          >
             {isDebugging ? "Running..." : "Run Full Diagnostic"}
           </Button>
 
@@ -89,9 +103,11 @@ export const EmailDebugPanel: React.FC = () => {
             <li>Backend API connectivity</li>
             <li>Email service configuration</li>
           </ul>
-          <p className="mt-2 text-xs">Check the browser console for detailed results.</p>
+          <p className="mt-2 text-xs">
+            Check the browser console for detailed results.
+          </p>
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};

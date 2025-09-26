@@ -26,9 +26,9 @@ export function AdminDashboard() {
   const { getAllUsers, addEngineer, editEngineer } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterBy, setFilterBy] = useState("all");
-  const [currentView, setCurrentView] = useState<"dashboard" | "engineers" | "debug">(
-    "dashboard"
-  );
+  const [currentView, setCurrentView] = useState<
+    "dashboard" | "engineers" | "debug"
+  >("dashboard");
   const [engineers, setEngineers] = useState<any[]>([]);
   const [engineersLoading, setEngineersLoading] = useState(true);
   const [editingEngineer, setEditingEngineer] = useState<string | null>(null);
@@ -398,7 +398,9 @@ export function AdminDashboard() {
               <h1 className="text-2xl font-bold text-gray-900">
                 Email Debug Panel
               </h1>
-              <p className="text-gray-600">Debug email sending issues and test engineer email lookup</p>
+              <p className="text-gray-600">
+                Debug email sending issues and test engineer email lookup
+              </p>
             </div>
             <button
               onClick={() => setCurrentView("dashboard")}
