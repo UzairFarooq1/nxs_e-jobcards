@@ -65,7 +65,7 @@ const sendViaBackendService = async (jobCard: JobCard, pdfBlob: Blob, engineerEm
 
     // Note: PDF is sent as blob in FormData, not as base64
 
-    // Prepare job card data for backend. Backend will handle CC to engineer and Gladys.
+    // Prepare job card data for backend. Backend will send to multiple recipients in TO field.
     const jobCardData = {
       id: jobCard.id,
       hospitalName: jobCard.hospitalName,

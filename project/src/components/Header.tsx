@@ -33,10 +33,18 @@ export function Header({
                 alt="NXS Logo"
                 className="h-10 w-auto"
                 onError={(e) => {
-                  console.log(
-                    "Logo failed to load - please ensure logomain.png is in the public folder"
-                  );
-                  e.currentTarget.style.display = "none";
+                  console.log("Primary logo failed, trying fallback...");
+                  const img = e.currentTarget as HTMLImageElement;
+                  if (img.src.includes("/logomain.png")) {
+                    img.src = "/static/images/logomain.png";
+                  } else if (img.src.includes("/static/images/logomain.png")) {
+                    img.src = "/static/images/logo.jpg";
+                  } else {
+                    console.log(
+                      "All logo attempts failed - please check file formats"
+                    );
+                    img.style.display = "none";
+                  }
                 }}
               />
               <div>

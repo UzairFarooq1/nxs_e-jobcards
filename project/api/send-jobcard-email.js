@@ -120,22 +120,26 @@ export default async function handler(req, res) {
 
     // Email content with enhanced details
     console.log("📧 Email recipients:");
-    console.log("📧 TO:", process.env.ADMIN_EMAIL || "it@vanguard-group.org");
-    console.log("📧 CC Engineer:", engineerEmail);
-    console.log("📧 CC Gladys: gladys.kariuki@nxsltd.com");
+    console.log(
+      "📧 Admin:",
+      process.env.ADMIN_EMAIL || "it@vanguard-group.org"
+    );
+    console.log("📧 Engineer:", engineerEmail);
+    console.log("📧 Gladys: gladys.kariuki@nxsltd.com");
 
-    const ccList = [
-      ...(engineerEmail ? [engineerEmail] : []),
+    // Create recipients list for TO field (multiple recipients)
+    const recipients = [
+      process.env.ADMIN_EMAIL || "it@vanguard-group.org",
       "gladys.kariuki@nxsltd.com",
-    ];
+      ...(engineerEmail ? [engineerEmail] : []),
+    ].filter(Boolean); // Remove any undefined values
 
-    console.log("📧 Final CC list:", ccList);
-    console.log("📧 CC list length:", ccList.length);
+    console.log("📧 Final recipients list:", recipients);
+    console.log("📧 Recipients count:", recipients.length);
 
     const mailOptions = {
       from: process.env.SMTP_USER,
-      to: process.env.ADMIN_EMAIL || "it@vanguard-group.org",
-      cc: ccList,
+      to: recipients.join(", "), // Join all recipients with commas
       replyTo: process.env.REPLY_TO_EMAIL || process.env.SMTP_USER,
       subject: `🔧 New Job Card: ${jobCard.id} - ${jobCard.hospitalName}`,
       html: `
@@ -224,7 +228,6 @@ export default async function handler(req, res) {
     console.log("📧 Sending email with options:", {
       from: mailOptions.from,
       to: mailOptions.to,
-      cc: mailOptions.cc,
       subject: mailOptions.subject,
       hasAttachments: mailOptions.attachments?.length > 0,
     });
@@ -242,7 +245,6 @@ export default async function handler(req, res) {
       message: "Job card email sent successfully",
       recipients: {
         to: mailOptions.to,
-        cc: mailOptions.cc,
         accepted: info.accepted,
         rejected: info.rejected,
       },
